@@ -13,7 +13,7 @@ const { v4: uuidv4 } = require('uuid');
 const initSqlJs = require('sql.js');
 
 const app        = express();
-const PORT = process.env.PORT || 3000;
+const PORT       = process.env.PORT || 3000;
 const JWT_SECRET = 'honbu-connect-secret-2026';
 const DB_FILE    = path.join(__dirname, 'honbu_connect.db');
 

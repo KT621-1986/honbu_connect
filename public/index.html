@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0" />
 <title>本部Connect</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
@@ -21,9 +21,10 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
 .login-btn:hover{opacity:.9}
 .login-err{color:#d32f2f;font-size:13px;margin-top:8px;display:none}
 /* ── レイアウト ── */
-#main{display:none;flex:1;overflow:hidden;flex-direction:row}
+#main{display:none;flex:1;overflow:hidden;flex-direction:column}
+#main-body{display:flex;flex:1;overflow:hidden;min-width:0}
 /* ── サイドバー ── */
-#sidebar{width:220px;background:#1a2f4a;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#sidebar{width:220px;background:#1a2f4a;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:transform .25s}
 .sb-logo{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
 .sb-logo .name{font-size:16px;font-weight:700;color:white;letter-spacing:.5px}
 .sb-logo .sub{font-size:10px;color:rgba(255,255,255,.45);margin-top:2px}
@@ -40,8 +41,36 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
 .logout-btn:hover{background:rgba(255,255,255,.15);color:white}
 /* ── メインコンテンツ ── */
 #content{flex:1;overflow-y:auto}
+/* ── モバイルヘッダー ── */
+#mobile-header{display:none;background:#1a2f4a;padding:10px 16px;align-items:center;justify-content:space-between;flex-shrink:0;width:100%}
+#mobile-header .mh-title{color:white;font-size:15px;font-weight:700}
+#mobile-header .mh-user{color:rgba(255,255,255,.6);font-size:11px}
+.hamburger{background:none;border:none;color:white;font-size:22px;cursor:pointer;padding:2px 6px;line-height:1}
+/* ── モバイル下部ナビ ── */
+#mobile-nav{display:none;background:#1a2f4a;border-top:1px solid rgba(255,255,255,.15);flex-shrink:0}
+.mobile-nav-inner{display:flex}
+.mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;border:none;background:transparent;color:rgba(255,255,255,.5);font-size:9px;cursor:pointer;font-family:inherit;gap:2px;border-top:2px solid transparent;position:relative}
+.mobile-nav-btn.active{color:white;border-top-color:#d4a017}
+.mobile-nav-btn .micon{font-size:17px;line-height:1}
+.mobile-nav-badge{position:absolute;top:4px;right:calc(50% - 18px);background:#d32f2f;color:white;border-radius:8px;padding:0 4px;font-size:9px;font-weight:700}
+/* ── サイドバーオーバーレイ ── */
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
 /* ── 共通 ── */
 .page{padding:24px;display:none}
+/* モバイル */
+#sidebar{transition:transform .25s}
+@media(max-width:1280px){
+  #sidebar{position:fixed!important;top:0!important;left:0!important;height:100vh!important;z-index:100!important;transform:translateX(-100%)!important}
+  #sidebar.open{transform:translateX(0)!important}
+  #sidebar-overlay.show{display:block!important}
+  #mobile-header{display:flex!important;flex-direction:row!important}
+  #mobile-nav{display:block!important}
+  #main-body{flex:1!important;overflow:hidden!important}
+  .page{padding:12px!important}
+  .editor-layout{grid-template-columns:1fr!important}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)!important}
+  .login-box{width:92%!important;padding:24px 18px!important}
+}
 .page.active{display:block}
 .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .page-header h2{margin:0;font-size:20px;color:#1a2f4a;font-weight:700}
@@ -168,6 +197,17 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
 
 <!-- メイン -->
 <div id="main">
+  <!-- モバイルヘッダー -->
+  <div id="mobile-header">
+    <div>
+      <div class="mh-title">本部Connect</div>
+      <div class="mh-user" id="mh-user"></div>
+    </div>
+    <button class="hamburger" id="hamburger-btn">☰</button>
+  </div>
+  <!-- サイドバーオーバーレイ -->
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div id="main-body">
   <!-- サイドバー -->
   <div id="sidebar">
     <div class="sb-logo">
@@ -394,6 +434,11 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
       <button class="btn-primary" onclick="saveUser()">追加</button>
     </div>
   </div>
+  </div><!-- main-body end -->
+  <!-- モバイル下部ナビ -->
+  <div id="mobile-nav">
+    <div class="mobile-nav-inner" id="mobile-nav-inner"></div>
+  </div>
 </div>
 
 <!-- トースト -->
@@ -435,7 +480,7 @@ function toast(msg, duration = 2500) {
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => {
+  document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.page === id);
   });
 }
@@ -492,43 +537,109 @@ async function initApp() {
 }
 
 // ─── ナビ ────────────────────────────────────────────────────
+// ── ハンバーガーメニュー ──
+document.getElementById('hamburger-btn').onclick = () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('show');
+};
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+// スワイプでサイドバーを閉じる
+(function() {
+  const sidebar = document.getElementById('sidebar');
+  let startX = 0, startY = 0;
+  sidebar.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  sidebar.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = Math.abs(e.changedTouches[0].clientY - startY);
+    if (dx < -50 && dy < 60) closeSidebar();
+  }, { passive: true });
+
+  // 画面左端からスワイプでサイドバーを開く
+  document.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = Math.abs(e.changedTouches[0].clientY - startY);
+    if (startX < 20 && dx > 50 && dy < 60) {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebar-overlay').classList.add('show');
+    }
+  }, { passive: true });
+})();
+
+function navAction(id) {
+  showPage(id);
+  if (id === 'list') loadInstructionList();
+  if (id === 'aggregate') loadAggregate();
+  if (id === 'admin') loadAdmin();
+  if (id === 'compose') openCompose(null);
+  closeSidebar();
+}
+
 function buildNav() {
   const nav = document.getElementById('sidebar-nav');
   nav.innerHTML = '';
   const items = [
-    { id:'list',      label: me.role==='store' ? '📬 受信一覧' : '📋 指示書一覧' },
-    ...(me.role!=='store' ? [{ id:'compose', label:'✏️ 新規作成' }] : []),
-    ...(me.role!=='store' ? [{ id:'aggregate', label:'📊 集計・分析' }] : []),
-    ...(me.role==='admin' ? [{ id:'admin', label:'⚙️ 管理' }] : []),
+    { id:'list',  label: me.role==='store' ? '📬 受信一覧' : '📋 指示書一覧', icon: me.role==='store' ? '📬' : '📋', short: '一覧' },
+    ...(me.role!=='store' ? [{ id:'compose',   label:'✏️ 新規作成',  icon:'✏️', short:'作成' }] : []),
+    ...(me.role!=='store' ? [{ id:'aggregate', label:'📊 集計・分析', icon:'📊', short:'集計' }] : []),
+    ...(me.role==='admin' ? [{ id:'admin',     label:'⚙️ 管理',      icon:'⚙️', short:'管理' }] : []),
+    { id:'_logout', label:'ログアウト', icon:'🚪', short:'ログアウト' },
   ];
-  items.forEach(item => {
+
+  // サイドバーナビ
+  items.filter(i=>i.id!=='_logout').forEach(item => {
     const btn = document.createElement('button');
     btn.className = 'nav-btn';
     btn.dataset.page = item.id;
     btn.innerHTML = `<span>${item.label}</span>`;
     if (item.id === 'list') btn.id = 'nav-list-btn';
-    btn.onclick = () => {
-      showPage(item.id);
-      if (item.id === 'list') loadInstructionList();
-      if (item.id === 'aggregate') loadAggregate();
-      if (item.id === 'admin') loadAdmin();
-      if (item.id === 'compose') openCompose(null);
-    };
+    btn.onclick = () => navAction(item.id);
     nav.appendChild(btn);
   });
+
+  // モバイル下部ナビ
+  const mobileNav = document.getElementById('mobile-nav-inner');
+  mobileNav.innerHTML = '';
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'mobile-nav-btn';
+    btn.dataset.page = item.id;
+    btn.innerHTML = `<span class=micon>${item.icon}</span><span>${item.short}</span>`;
+    if (item.id === 'list') btn.id = 'mobile-nav-list-btn';
+    btn.onclick = () => {
+      if (item.id === '_logout') { document.getElementById('logout-btn').click(); return; }
+      navAction(item.id);
+    };
+    mobileNav.appendChild(btn);
+  });
+
+  // モバイルヘッダーのユーザー情報
+  document.getElementById('mh-user').textContent = me.display_name;
 }
 
 function updateUnreadBadge(count) {
-  const btn = document.getElementById('nav-list-btn');
-  if (!btn) return;
-  const existing = btn.querySelector('.nav-badge');
-  if (existing) existing.remove();
-  if (count > 0) {
-    const b = document.createElement('span');
-    b.className = 'nav-badge';
-    b.textContent = count;
-    btn.appendChild(b);
-  }
+  ['nav-list-btn','mobile-nav-list-btn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const existing = btn.querySelector('.nav-badge, .mobile-nav-badge');
+    if (existing) existing.remove();
+    if (count > 0) {
+      const b = document.createElement('span');
+      b.className = id === 'nav-list-btn' ? 'nav-badge' : 'mobile-nav-badge';
+      b.textContent = count;
+      btn.appendChild(b);
+    }
+  });
 }
 
 // ─── 指示書一覧 ──────────────────────────────────────────────
