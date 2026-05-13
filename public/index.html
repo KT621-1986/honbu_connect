@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>本部Connect</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;background:#f0f2f5}
+#app{height:100vh;display:flex;flex-direction:column}
+/* ── ログイン ── */
+#login-screen{display:none;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#1a2f4a 0%,#2c4a6e 100%)}
+.login-box{background:white;border-radius:16px;padding:40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-box h1{margin:0 0 8px;color:#1a2f4a;font-size:22px}
+.login-box p{margin:0 0 28px;color:#888;font-size:13px}
+.login-box label{display:block;font-size:12px;color:#666;margin-bottom:4px;font-weight:500}
+.login-box input{width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:14px;outline:none;transition:border-color .2s}
+.login-box input:focus{border-color:#1a2f4a}
+.login-btn{width:100%;padding:12px;background:#1a2f4a;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.login-btn:hover{opacity:.9}
+.login-err{color:#d32f2f;font-size:13px;margin-top:8px;display:none}
+/* ── レイアウト ── */
+#main{display:none;flex:1;overflow:hidden;flex-direction:row}
+/* ── サイドバー ── */
+#sidebar{width:220px;background:#1a2f4a;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-logo{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo .name{font-size:16px;font-weight:700;color:white;letter-spacing:.5px}
+.sb-logo .sub{font-size:10px;color:rgba(255,255,255,.45);margin-top:2px}
+.sb-user{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-user .uname{font-size:12px;color:white;font-weight:600;margin-bottom:2px}
+.sb-user .urole{font-size:11px;color:rgba(255,255,255,.5)}
+.sb-nav{flex:1;padding:8px 0}
+.nav-btn{width:100%;text-align:left;padding:12px 16px;border:none;background:transparent;color:rgba(255,255,255,.8);font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:space-between;border-left:3px solid transparent;transition:all .12s}
+.nav-btn:hover{background:rgba(255,255,255,.08);color:white}
+.nav-btn.active{background:rgba(255,255,255,.12);color:white;border-left-color:#d4a017}
+.nav-badge{background:#d32f2f;color:white;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700}
+.sb-foot{padding:10px 16px;border-top:1px solid rgba(255,255,255,.08);font-size:10px;color:rgba(255,255,255,.3)}
+.logout-btn{width:100%;padding:8px;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;font-family:inherit;border-radius:4px;margin-bottom:8px}
+.logout-btn:hover{background:rgba(255,255,255,.15);color:white}
+/* ── メインコンテンツ ── */
+#content{flex:1;overflow-y:auto}
+/* ── 共通 ── */
+.page{padding:24px;display:none}
+.page.active{display:block}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-header h2{margin:0;font-size:20px;color:#1a2f4a;font-weight:700}
+.page-header p{margin:4px 0 0;font-size:13px;color:#777}
+.btn-primary{background:#1a2f4a;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;transition:opacity .15s}
+.btn-primary:hover{opacity:.88}
+.btn-secondary{background:white;color:#1a2f4a;border:2px solid #1a2f4a;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}
+.btn-danger{background:#d32f2f;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit}
+.btn-sm{padding:5px 12px;font-size:12px}
+.card{background:white;border:1px solid #e0e0e0;border-radius:8px;padding:16px 20px;margin-bottom:12px}
+.card.pinned{border-color:#d4a017;border-width:2px}
+.card.clickable{cursor:pointer;transition:box-shadow .15s}
+.card.clickable:hover{box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.badge-unread{background:#d32f2f;color:white}
+.badge-read{background:#e8e8f4;color:#2d2d6a}
+.badge-responded{background:#e8f4e8;color:#2d6a2d}
+.badge-販促{background:#e8f4e8;color:#2d6a2d}
+.badge-設備{background:#e8e8f4;color:#2d2d6a}
+.badge-人事・労務{background:#f4e8e8;color:#6a2d2d}
+.badge-商品{background:#fef9e8;color:#6a5a2d}
+.badge-安全・衛生{background:#f4e8f0;color:#6a2d5a}
+.badge-その他{background:#eee;color:#555}
+.badge-draft{background:#fff3cd;color:#856404}
+.badge-published{background:#d4edda;color:#155724}
+.badge-archived{background:#e2e3e5;color:#383d41}
+/* ── 指示書リスト ── */
+.inst-card{position:relative}
+.inst-card .pin-icon{position:absolute;top:12px;right:14px}
+.inst-meta{display:flex;align-items:center;gap:16px;font-size:12px;color:#999;flex-wrap:wrap}
+.progress-bar{display:inline-flex;align-items:center;gap:6px;margin-left:auto}
+.bar-bg{display:inline-block;width:60px;height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;background:#4caf50;display:block;border-radius:3px}
+/* ── 詳細 ── */
+.back-btn{background:none;border:none;color:#1a2f4a;cursor:pointer;font-size:13px;padding:0;margin-bottom:16px;font-family:inherit}
+.detail-header{background:white;border-radius:8px;padding:20px;margin-bottom:14px;border:1px solid #e0e0e0}
+.detail-body{background:white;border-radius:8px;padding:28px 32px;margin-bottom:14px;border:1px solid #e0e0e0;line-height:1.8;font-size:14px;color:#333}
+.detail-body img{max-width:100%;height:auto;border:1px solid #ddd;border-radius:4px;margin:4px 0}
+.response-box{background:white;border-radius:8px;padding:20px 24px;border:2px solid #1a2f4a;margin-bottom:14px}
+.choice-btn{padding:10px 22px;border:2px solid #1a2f4a;border-radius:6px;background:white;color:#1a2f4a;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all .15s;margin:4px}
+.choice-btn:hover{background:#1a2f4a;color:white}
+.responded-box{background:#e8f4e8;padding:12px 16px;border-radius:6px;color:#2d6a2d}
+/* ── エディタ ── */
+.editor-layout{display:grid;grid-template-columns:1fr 310px;gap:16px;align-items:start}
+.editor-title{width:100%;border:none;font-size:18px;font-weight:700;color:#1a2f4a;outline:none;font-family:inherit}
+.toolbar{padding:8px 10px;border-bottom:1px solid #e8e8e8;background:#f8f9fa;display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.tb-btn{padding:4px 8px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap;line-height:1.4}
+.tb-btn:hover{background:#f0f0f0}
+.tb-sep{width:1px;height:20px;background:#ddd;margin:0 3px;display:inline-block}
+.editor-area{min-height:400px;padding:20px 24px;outline:none;font-size:14px;line-height:1.8;color:#333;font-family:inherit}
+.editor-area:empty:before{content:attr(data-ph);color:#aaa;pointer-events:none;display:block}
+.editor-area h2{font-size:18px;margin:16px 0 8px}
+.editor-area h3{font-size:15px;margin:12px 0 6px}
+.editor-area table td,.editor-area table th{min-width:60px}
+.editor-area img{max-width:100%;height:auto;border:1px solid #ddd;border-radius:4px;margin:4px 0}
+/* ── 設定パネル ── */
+.settings-panel{display:flex;flex-direction:column;gap:12px}
+.settings-card{background:white;border:1px solid #e0e0e0;border-radius:8px;padding:16px}
+.settings-card h3{margin:0 0 12px;font-size:14px;color:#1a2f4a;font-weight:700}
+.form-label{display:block;font-size:12px;color:#777;margin-bottom:3px;font-weight:500}
+.form-input{width:100%;padding:8px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:13px;font-family:inherit;outline:none;transition:border-color .2s}
+.form-input:focus{border-color:#1a2f4a}
+.form-select{width:100%;padding:8px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:13px;font-family:inherit;background:white;outline:none}
+.checkbox-label{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+/* ── 集計 ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.kpi-card{background:white;border:1px solid #e0e0e0;border-radius:8px;padding:16px;text-align:center}
+.kpi-val{font-size:34px;font-weight:700}
+.kpi-lbl{font-size:12px;color:#999;margin-top:4px}
+.agg-table-wrap{background:white;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;margin-bottom:24px}
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table thead tr{background:#1a2f4a;color:white}
+.data-table thead th{padding:11px 14px;text-align:left}
+.data-table tbody tr:nth-child(even){background:#f8f9fa}
+.data-table tbody td{padding:10px 14px;border-bottom:1px solid #eee}
+/* ── 管理ページ ── */
+.mgmt-section{margin-bottom:32px}
+.mgmt-section h3{font-size:16px;color:#1a2f4a;font-weight:700;margin:0 0 12px}
+/* ── モーダル ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal-overlay.show{display:flex}
+.modal-box{background:white;border-radius:12px;padding:28px;min-width:320px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto}
+.modal-box h3{margin:0 0 18px;color:#1a2f4a;font-size:17px;font-weight:700}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+/* ── 読込み ── */
+.loading{display:flex;align-items:center;justify-content:center;height:200px;color:#aaa;font-size:15px}
+.empty{text-align:center;padding:60px;color:#bbb;font-size:15px}
+/* ── 通知トースト ── */
+#toast{position:fixed;bottom:24px;right:24px;background:#1a2f4a;color:white;padding:12px 20px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+/* ── 集計バー ── */
+.agg-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.agg-bar-label{width:140px;font-size:13px;color:#555;flex-shrink:0}
+.agg-bar-bg{flex:1;height:22px;background:#f0f0f0;border-radius:4px;overflow:hidden}
+.agg-bar-fill{height:100%;background:#1a2f4a;transition:width .5s}
+.agg-bar-count{width:36px;font-size:13px;color:#1a2f4a;font-weight:700;text-align:right}
+/* ── 既読プログレス ── */
+.prog-row{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.prog-num{text-align:center}
+.prog-num .n{font-size:32px;font-weight:700;color:#1a2f4a}
+.prog-num .l{font-size:11px;color:#888}
+.prog-bar-wrap{flex:1}
+.prog-bar-bg{height:12px;background:#e0e0e0;border-radius:6px;overflow:hidden}
+.prog-bar-green{height:100%;background:#4caf50;border-radius:6px;transition:width .5s}
+.prog-caption{font-size:12px;color:#888;margin-top:4px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ログイン画面 -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>本部Connect</h1>
+    <p>店舗指示管理システム</p>
+    <label>ユーザー名</label>
+    <input type="text" id="login-user" placeholder="例: admin" autocomplete="username" />
+    <label>パスワード</label>
+    <input type="password" id="login-pass" placeholder="パスワード" autocomplete="current-password" />
+    <button class="login-btn" id="login-btn">ログイン</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- メイン -->
+<div id="main">
+  <!-- サイドバー -->
+  <div id="sidebar">
+    <div class="sb-logo">
+      <div class="name">本部Connect</div>
+      <div class="sub">店舗指示管理システム</div>
+    </div>
+    <div class="sb-user">
+      <div class="uname" id="sb-uname">—</div>
+      <div class="urole" id="sb-urole">—</div>
+    </div>
+    <nav class="sb-nav" id="sidebar-nav"></nav>
+    <div class="sb-foot">
+      <button class="logout-btn" id="logout-btn">ログアウト</button>
+      v1.0.0 © 2026 本部Connect
+    </div>
+  </div>
+
+  <!-- コンテンツ -->
+  <div id="content">
+    <!-- 指示書一覧 -->
+    <div class="page" id="page-list">
+      <div class="page-header">
+        <div><h2 id="list-title">指示書一覧</h2><p id="list-sub"></p></div>
+        <button class="btn-primary" id="btn-new-inst" style="display:none">＋ 新規作成</button>
+      </div>
+      <div id="inst-list"></div>
+    </div>
+
+    <!-- 指示書詳細 -->
+    <div class="page" id="page-detail" style="max-width:920px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <button class="back-btn" id="btn-back-list">← 一覧に戻る</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn-secondary btn-sm" id="btn-edit-inst" style="display:none">✏️ 編集</button>
+          <button class="btn-danger btn-sm" id="btn-del-inst" style="display:none">🗑 削除</button>
+        </div>
+      </div>
+      <div id="detail-content"></div>
+    </div>
+
+    <!-- 新規作成 / 編集 -->
+    <div class="page" id="page-compose">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+        <button class="back-btn" id="btn-back-compose">← 一覧に戻る</button>
+        <h2 style="margin:0;font-size:20px;color:#1a2f4a;font-weight:700" id="compose-title-label">新規指示書作成</h2>
+      </div>
+      <div class="editor-layout">
+        <!-- 左：エディタ -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card" style="padding:12px 16px">
+            <input class="editor-title" id="c-title" placeholder="指示書タイトルを入力" />
+          </div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <div class="toolbar" id="editor-toolbar">
+              <button class="tb-btn" onclick="ed('bold')"><b>B</b></button>
+              <button class="tb-btn" onclick="ed('italic')"><i>I</i></button>
+              <button class="tb-btn" onclick="ed('underline')"><u>U</u></button>
+              <button class="tb-btn" onclick="ed('strikeThrough')"><s>S</s></button>
+              <span class="tb-sep"></span>
+              <button class="tb-btn" onclick="ed('formatBlock','H2')">H2</button>
+              <button class="tb-btn" onclick="ed('formatBlock','H3')">H3</button>
+              <button class="tb-btn" onclick="ed('formatBlock','P')">P</button>
+              <span class="tb-sep"></span>
+              <button class="tb-btn" onclick="ed('insertUnorderedList')">・リスト</button>
+              <button class="tb-btn" onclick="ed('insertOrderedList')">1.リスト</button>
+              <span class="tb-sep"></span>
+              <button class="tb-btn" id="btn-table-modal">🗂 表</button>
+              <button class="tb-btn" onclick="edCallout('info')">ℹ 情報</button>
+              <button class="tb-btn" onclick="edCallout('warn')">⚠ 注意</button>
+              <button class="tb-btn" onclick="edCallout('imp')">❗ 重要</button>
+              <span class="tb-sep"></span>
+              <button class="tb-btn" id="btn-img-pick">🖼 画像</button>
+              <input type="file" accept="image/*" id="img-file" style="display:none" />
+              <span class="tb-sep"></span>
+              <button class="tb-btn" onclick="ed('justifyLeft')">≡L</button>
+              <button class="tb-btn" onclick="ed('justifyCenter')">≡C</button>
+              <button class="tb-btn" onclick="ed('justifyRight')">≡R</button>
+              <span class="tb-sep"></span>
+              <select class="tb-btn" onchange="ed('fontSize',this.value);this.value=''">
+                <option value="">サイズ</option>
+                <option value="2">小</option><option value="3">中</option>
+                <option value="4">大</option><option value="5">特大</option>
+              </select>
+              <input type="color" title="文字色" onchange="ed('foreColor',this.value)" style="width:26px;height:24px;border:1px solid #ddd;border-radius:3px;padding:1px;cursor:pointer" />
+              <input type="color" title="背景色" onchange="ed('hiliteColor',this.value)" style="width:26px;height:24px;border:1px solid #ddd;border-radius:3px;padding:1px;cursor:pointer" />
+            </div>
+            <div class="editor-area" id="editor-body" contenteditable="true"
+              data-ph="ここに指示内容を入力してください。&#10;画像はツールバーのボタン、またはCtrl+Vで直接貼り付けできます。"></div>
+          </div>
+          <p style="font-size:11px;color:#aaa;margin:0">💡 画像はツールバー「🖼 画像」か、スクリーンショットを Ctrl+V で直接貼り付けできます。</p>
+        </div>
+
+        <!-- 右：設定 -->
+        <div class="settings-panel">
+          <div class="settings-card">
+            <h3>配信設定</h3>
+            <label class="form-label">カテゴリ</label>
+            <select class="form-select" id="c-cat" style="margin-bottom:12px">
+              <option>販促</option><option>設備</option><option>人事・労務</option>
+              <option>商品</option><option>安全・衛生</option><option>その他</option>
+            </select>
+            <label class="form-label">期限日</label>
+            <input type="date" class="form-input" id="c-deadline" style="margin-bottom:12px" />
+            <label class="form-label">ステータス</label>
+            <select class="form-select" id="c-status" style="margin-bottom:12px">
+              <option value="draft">下書き</option>
+              <option value="published">今すぐ配信</option>
+            </select>
+            <label class="checkbox-label" style="margin-bottom:8px">
+              <input type="checkbox" id="c-pinned" /> 📌 ピン留め
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="c-needs-resp" /> 回答を収集する
+            </label>
+            <div id="resp-settings" style="display:none;margin-top:12px">
+              <label class="form-label">質問文</label>
+              <input class="form-input" id="c-question" placeholder="例: 準備状況を報告してください" style="margin-bottom:10px" />
+              <label class="form-label">選択肢</label>
+              <div id="choices-list"></div>
+              <button onclick="addChoice()" style="width:100%;font-size:12px;color:#1a2f4a;background:none;border:1px dashed #1a2f4a;padding:5px;border-radius:4px;cursor:pointer;font-family:inherit;margin-top:4px">＋ 選択肢を追加</button>
+            </div>
+          </div>
+          <div class="settings-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <h3 style="margin:0">配信先 <span id="target-count" style="font-weight:400;font-size:12px;color:#888"></span></h3>
+              <div style="display:flex;gap:8px">
+                <button onclick="selectAllStores(true)"  style="font-size:11px;color:#1a2f4a;background:none;border:none;cursor:pointer;padding:0">全選択</button>
+                <span style="color:#ddd">|</span>
+                <button onclick="selectAllStores(false)" style="font-size:11px;color:#999;background:none;border:none;cursor:pointer;padding:0">全解除</button>
+              </div>
+            </div>
+            <div id="store-checklist"></div>
+          </div>
+          <button class="btn-primary" id="btn-publish" style="padding:14px;font-size:15px;width:100%">📤 配信する</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 集計 -->
+    <div class="page" id="page-aggregate">
+      <div class="page-header"><div><h2>集計・分析</h2></div></div>
+      <div class="kpi-grid" id="agg-kpi"></div>
+      <h3 style="font-size:15px;color:#1a2f4a;margin:0 0 12px">指示書別 回答状況</h3>
+      <div class="agg-table-wrap"><table class="data-table" id="agg-inst-table"><thead><tr><th>指示書</th><th style="text-align:center">カテゴリ</th><th style="text-align:center">期限</th><th style="text-align:center">既読</th><th style="text-align:center">回答</th><th>進捗</th></tr></thead><tbody id="agg-inst-body"></tbody></table></div>
+      <h3 style="font-size:15px;color:#1a2f4a;margin:0 0 12px">店舗別 回答マトリクス</h3>
+      <div class="agg-table-wrap" style="overflow-x:auto"><div id="agg-matrix"></div></div>
+    </div>
+
+    <!-- 管理 -->
+    <div class="page" id="page-admin">
+      <div class="page-header"><div><h2>システム管理</h2></div></div>
+      <div class="mgmt-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h3>店舗管理</h3>
+          <button class="btn-primary btn-sm" onclick="openStoreModal()">＋ 店舗追加</button>
+        </div>
+        <div class="agg-table-wrap"><table class="data-table"><thead><tr><th>ID</th><th>店舗名</th><th>エリア</th><th>コード</th><th>操作</th></tr></thead><tbody id="store-table-body"></tbody></table></div>
+      </div>
+      <div class="mgmt-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h3>ユーザー管理</h3>
+          <button class="btn-primary btn-sm" onclick="openUserModal()">＋ ユーザー追加</button>
+        </div>
+        <div class="agg-table-wrap"><table class="data-table"><thead><tr><th>ユーザー名</th><th>表示名</th><th>役割</th><th>所属店舗</th><th>操作</th></tr></thead><tbody id="user-table-body"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 表挿入モーダル -->
+<div class="modal-overlay" id="table-modal">
+  <div class="modal-box" style="width:260px">
+    <h3>表を挿入</h3>
+    <label class="form-label">行数</label>
+    <input type="number" class="form-input" id="tbl-rows" value="3" min="1" max="20" style="margin-bottom:10px" />
+    <label class="form-label">列数</label>
+    <input type="number" class="form-input" id="tbl-cols" value="2" min="1" max="10" style="margin-bottom:0" />
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('table-modal')">キャンセル</button>
+      <button class="btn-primary" onclick="doInsertTable()">挿入</button>
+    </div>
+  </div>
+</div>
+
+<!-- 店舗追加モーダル -->
+<div class="modal-overlay" id="store-modal">
+  <div class="modal-box">
+    <h3>店舗を追加</h3>
+    <label class="form-label">店舗名 *</label>
+    <input class="form-input" id="sm-name" placeholder="例: 梅田店" style="margin-bottom:10px" />
+    <label class="form-label">エリア</label>
+    <input class="form-input" id="sm-area" placeholder="例: 大阪" style="margin-bottom:10px" />
+    <label class="form-label">店舗コード</label>
+    <input class="form-input" id="sm-code" placeholder="例: UMD" style="margin-bottom:0" />
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('store-modal')">キャンセル</button>
+      <button class="btn-primary" onclick="saveStore()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ユーザー追加モーダル -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal-box">
+    <h3>ユーザーを追加</h3>
+    <label class="form-label">ユーザー名 *</label>
+    <input class="form-input" id="um-username" placeholder="例: store_tokyo01" style="margin-bottom:10px" />
+    <label class="form-label">パスワード *</label>
+    <input type="password" class="form-input" id="um-password" placeholder="パスワード" style="margin-bottom:10px" />
+    <label class="form-label">表示名 *</label>
+    <input class="form-input" id="um-name" placeholder="例: 渋谷店 店長" style="margin-bottom:10px" />
+    <label class="form-label">役割 *</label>
+    <select class="form-select" id="um-role" style="margin-bottom:10px" onchange="updateStoreField()">
+      <option value="store">店舗スタッフ</option>
+      <option value="hq">本部スタッフ</option>
+      <option value="admin">管理者</option>
+    </select>
+    <div id="um-store-row">
+      <label class="form-label">所属店舗</label>
+      <select class="form-select" id="um-store" style="margin-bottom:0"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('user-modal')">キャンセル</button>
+      <button class="btn-primary" onclick="saveUser()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- トースト -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+//  フロントエンド JavaScript
+// ============================================================
+
+const API = '';  // same origin
+let token   = localStorage.getItem('hc_token');
+let me      = null;
+let stores  = [];
+let currentInstId = null;
+let editingInstId = null;
+let choices = [];
+
+// ─── API ヘルパー ────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  if (body)  opts.body = JSON.stringify(body);
+  const res = await fetch(API + path, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'エラーが発生しました');
+  return data;
+}
+
+// ─── トースト ────────────────────────────────────────────────
+function toast(msg, duration = 2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ─── ページ切替 ─────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === id);
+  });
+}
+
+// ─── ログイン ────────────────────────────────────────────────
+document.getElementById('login-btn').onclick = async () => {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-err');
+  err.style.display = 'none';
+  try {
+    const res = await api('POST', '/api/auth/login', { username: u, password: p });
+    token = res.token;
+    me    = res.user;
+    localStorage.setItem('hc_token', token);
+    initApp();
+  } catch(e) {
+    err.style.display = 'block';
+    err.textContent = e.message;
+  }
+};
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-btn').click();
+});
+
+document.getElementById('logout-btn').onclick = () => {
+  token = null; me = null;
+  localStorage.removeItem('hc_token');
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+};
+
+// ─── アプリ初期化 ────────────────────────────────────────────
+async function initApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main').style.display = 'flex';
+
+  document.getElementById('sb-uname').textContent = me.display_name;
+  const roleLabel = { admin:'管理者', hq:'本部スタッフ', store: me.store?.name + ' スタッフ' };
+  document.getElementById('sb-urole').textContent = roleLabel[me.role] || me.role;
+
+  buildNav();
+  stores = await api('GET', '/api/stores');
+  renderStoreChecklist();
+
+  if (me.role !== 'store') {
+    document.getElementById('btn-new-inst').style.display = 'inline-block';
+  }
+  document.getElementById('btn-edit-inst').style.display = me.role !== 'store' ? 'inline-block' : 'none';
+  document.getElementById('btn-del-inst').style.display  = me.role !== 'store' ? 'inline-block' : 'none';
+
+  await loadInstructionList();
+  showPage('list');
+}
+
+// ─── ナビ ────────────────────────────────────────────────────
+function buildNav() {
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = '';
+  const items = [
+    { id:'list',      label: me.role==='store' ? '📬 受信一覧' : '📋 指示書一覧' },
+    ...(me.role!=='store' ? [{ id:'compose', label:'✏️ 新規作成' }] : []),
+    ...(me.role!=='store' ? [{ id:'aggregate', label:'📊 集計・分析' }] : []),
+    ...(me.role==='admin' ? [{ id:'admin', label:'⚙️ 管理' }] : []),
+  ];
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn';
+    btn.dataset.page = item.id;
+    btn.innerHTML = `<span>${item.label}</span>`;
+    if (item.id === 'list') btn.id = 'nav-list-btn';
+    btn.onclick = () => {
+      showPage(item.id);
+      if (item.id === 'list') loadInstructionList();
+      if (item.id === 'aggregate') loadAggregate();
+      if (item.id === 'admin') loadAdmin();
+      if (item.id === 'compose') openCompose(null);
+    };
+    nav.appendChild(btn);
+  });
+}
+
+function updateUnreadBadge(count) {
+  const btn = document.getElementById('nav-list-btn');
+  if (!btn) return;
+  const existing = btn.querySelector('.nav-badge');
+  if (existing) existing.remove();
+  if (count > 0) {
+    const b = document.createElement('span');
+    b.className = 'nav-badge';
+    b.textContent = count;
+    btn.appendChild(b);
+  }
+}
+
+// ─── 指示書一覧 ──────────────────────────────────────────────
+async function loadInstructionList() {
+  document.getElementById('inst-list').innerHTML = '<div class="loading">読み込み中...</div>';
+  try {
+    const list = await api('GET', '/api/instructions');
+
+    if (me.role === 'store') {
+      document.getElementById('list-title').textContent = '受信した指示書';
+      const unread = list.filter(i => !i.my_read).length;
+      document.getElementById('list-sub').textContent = `${list.length}件（未読 ${unread}件）`;
+      updateUnreadBadge(unread);
+    } else {
+      document.getElementById('list-title').textContent = '配信済み指示書';
+      document.getElementById('list-sub').textContent = `全${list.length}件`;
+    }
+
+    if (list.length === 0) {
+      document.getElementById('inst-list').innerHTML = '<div class="empty">指示書はまだありません</div>';
+      return;
+    }
+
+    document.getElementById('inst-list').innerHTML = list.map(inst => {
+      const over  = inst.deadline && new Date(inst.deadline) < new Date();
+      const total = inst.targets?.length || 0;
+
+      let badges = `<span class="badge badge-${inst.category}">${inst.category}</span>`;
+      if (me.role === 'store') {
+        if (!inst.my_read)      badges += ' <span class="badge badge-unread">未読</span>';
+        else if (!inst.my_response && inst.requires_response) badges += ' <span class="badge badge-read">未回答</span>';
+        else if (inst.my_response) badges += ' <span class="badge badge-responded">✓ 回答済</span>';
+      } else {
+        if (inst.status !== 'published') badges += ` <span class="badge badge-${inst.status}">${inst.status==='draft'?'下書き':'アーカイブ'}</span>`;
+      }
+
+      let progress = '';
+      if (me.role !== 'store' && inst.requires_response && total > 0) {
+        const pct = Math.round((inst.response_count / total) * 100);
+        progress = `<span class="progress-bar">回答 <strong>${inst.response_count}</strong>/${total} <span class="bar-bg"><span class="bar-fill" style="width:${pct}%"></span></span></span>`;
+      }
+
+      return `<div class="card inst-card clickable ${inst.pinned?'pinned':''}" onclick="openDetail('${inst.id}')">
+        ${inst.pinned ? '<span class="pin-icon">📌</span>' : ''}
+        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">${badges}</div>
+        <div style="font-size:15px;font-weight:600;color:#1a2f4a;margin-bottom:8px">${esc(inst.title)}</div>
+        <div class="inst-meta">
+          <span>${esc(inst.created_by_name)}</span>
+          <span>配信: ${inst.created_at.slice(0,10).replace(/-/g,'/')}</span>
+          ${inst.deadline ? `<span style="color:${over?'#d32f2f':'#888'};font-weight:${over?700:400}">${over?'⚠ 期限切: ':'期限: '}${inst.deadline.replace(/-/g,'/')}</span>` : ''}
+          ${progress}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('inst-list').innerHTML = `<div class="empty" style="color:#d32f2f">${e.message}</div>`;
+  }
+}
+
+// ─── 詳細 ────────────────────────────────────────────────────
+async function openDetail(id) {
+  currentInstId = id;
+  showPage('detail');
+  document.getElementById('detail-content').innerHTML = '<div class="loading">読み込み中...</div>';
+
+  try {
+    const inst = await api('GET', `/api/instructions/${id}`);
+
+    // 既読マーク（店舗のみ）
+    if (me.role === 'store' && !inst.my_read) {
+      api('POST', `/api/instructions/${id}/read`).catch(() => {});
+    }
+
+    const over  = inst.deadline && new Date(inst.deadline) < new Date();
+    const total = inst.targets?.length || 0;
+
+    let respSection = '';
+    if (inst.requires_response) {
+      if (me.role === 'store') {
+        if (inst.my_response) {
+          respSection = `<div class="responded-box"><strong>✓ 回答済み：</strong>${esc(inst.my_response.answer)} <span style="margin-left:12px;font-size:12px;color:#888">${inst.my_response.responded_at}</span></div>`;
+        } else {
+          const btns = (inst.choices||[]).map(c => `<button class="choice-btn" onclick="doRespond('${esc(c)}')">${esc(c)}</button>`).join('');
+          respSection = `<div class="response-box"><h3 style="margin:0 0 14px;font-size:15px;color:#1a2f4a">📋 ${esc(inst.response_question)}</h3><div>${btns}</div></div>`;
+        }
+      } else {
+        // 本部：集計表示
+        respSection = await renderAggSection(inst);
+      }
+    }
+
+    // 本部：既読状況
+    let readSection = '';
+    if (me.role !== 'store') {
+      const readCount = inst.read_count || 0;
+      const readPct   = total > 0 ? Math.round((readCount / total) * 100) : 0;
+      readSection = `<div class="card" style="margin-bottom:14px">
+        <h3 style="margin:0 0 12px;font-size:14px;color:#1a2f4a">👁 既読状況</h3>
+        <div class="prog-row">
+          <div class="prog-num"><div class="n">${readCount}</div><div class="l">既読</div></div>
+          <div class="prog-num"><div class="n" style="color:#ccc">${total-readCount}</div><div class="l">未読</div></div>
+          <div class="prog-bar-wrap">
+            <div class="prog-bar-bg"><div class="prog-bar-green" style="width:${readPct}%"></div></div>
+            <div class="prog-caption">${total}店舗中 ${readCount}店舗が既読</div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    document.getElementById('detail-content').innerHTML = `
+      <div class="detail-header">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+          <span class="badge badge-${inst.category}">${inst.category}</span>
+          ${inst.deadline ? `<span style="font-size:12px;color:${over?'#d32f2f':'#888'};font-weight:${over?700:400}">${over?'⚠ 期限切: ':'期限: '}${inst.deadline.replace(/-/g,'/')}</span>` : ''}
+        </div>
+        <h1 style="margin:0 0 10px;font-size:22px;color:#1a2f4a;font-weight:700">${esc(inst.title)}</h1>
+        <div style="font-size:13px;color:#999">${esc(inst.created_by_name)} ・ 配信日: ${inst.created_at.slice(0,10).replace(/-/g,'/')}</div>
+      </div>
+      <div class="detail-body">${inst.content}</div>
+      ${readSection}
+      ${respSection}
+    `;
+
+    document.getElementById('btn-edit-inst').onclick = () => openCompose(inst);
+    document.getElementById('btn-del-inst').onclick  = () => delInst(id);
+  } catch(e) {
+    document.getElementById('detail-content').innerHTML = `<div class="empty" style="color:#d32f2f">${e.message}</div>`;
+  }
+}
+
+async function renderAggSection(inst) {
+  try {
+    const agg = await api('GET', `/api/instructions/${inst.id}/aggregate`);
+    const { total, read_count, response_count, by_choice, stores: storeList } = agg;
+
+    const bars = Object.entries(by_choice).map(([ch, cnt]) => {
+      const pct = response_count > 0 ? Math.round((cnt/response_count)*100) : 0;
+      return `<div class="agg-bar-row">
+        <div class="agg-bar-label">${esc(ch)}</div>
+        <div class="agg-bar-bg"><div class="agg-bar-fill" style="width:${pct}%"></div></div>
+        <div class="agg-bar-count">${cnt}件</div>
+      </div>`;
+    }).join('');
+
+    const respPct = total > 0 ? Math.round((response_count/total)*100) : 0;
+    const rows = storeList.map(s =>
+      `<tr style="background:${s.answer?'white':'#fff8f8'}">
+        <td style="font-weight:600;color:#1a2f4a">${esc(s.name)}</td>
+        <td style="color:#888">${esc(s.area||'')}</td>
+        <td>${s.read_at ? `<span style="font-size:12px;color:#555">${s.read_at}</span>` : '<span style="color:#ddd">—</span>'}</td>
+        <td>${s.answer ? `<span class="badge badge-responded">${esc(s.answer)}</span>` : '<span style="color:#ddd">—</span>'}</td>
+        <td style="font-size:12px;color:#999">${s.responded_at||'—'}</td>
+      </tr>`
+    ).join('');
+
+    return `<div class="response-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <h3 style="margin:0;font-size:15px;color:#1a2f4a">📋 ${esc(inst.response_question)}</h3>
+        <a href="/api/instructions/${inst.id}/export" style="font-size:12px;color:#1a2f4a;text-decoration:none;border:1px solid #1a2f4a;padding:4px 10px;border-radius:4px">📥 CSV出力</a>
+      </div>
+      <div class="prog-row">
+        <div class="prog-num"><div class="n">${response_count}</div><div class="l">回答済</div></div>
+        <div class="prog-num"><div class="n" style="color:#ccc">${total-response_count}</div><div class="l">未回答</div></div>
+        <div class="prog-bar-wrap">
+          <div class="prog-bar-bg"><div class="prog-bar-green" style="width:${respPct}%"></div></div>
+          <div class="prog-caption">${total}店舗中 ${response_count}店舗が回答</div>
+        </div>
+      </div>
+      <div style="margin-bottom:20px">${bars}</div>
+      <div style="overflow-x:auto">
+        <table class="data-table"><thead><tr><th>店舗</th><th>エリア</th><th>既読日時</th><th>回答内容</th><th>回答日時</th></tr></thead>
+        <tbody>${rows}</tbody></table>
+      </div>
+    </div>`;
+  } catch { return ''; }
+}
+
+async function doRespond(answer) {
+  try {
+    await api('POST', `/api/instructions/${currentInstId}/respond`, { answer });
+    toast('回答しました: ' + answer);
+    openDetail(currentInstId);
+    // バッジ更新
+    const list = await api('GET', '/api/instructions');
+    const unread = list.filter(i => !i.my_read || (i.requires_response && !i.my_response)).length;
+    updateUnreadBadge(unread);
+  } catch(e) { toast('エラー: ' + e.message); }
+}
+
+async function delInst(id) {
+  if (!confirm('この指示書を削除しますか？')) return;
+  try {
+    await api('DELETE', `/api/instructions/${id}`);
+    toast('削除しました');
+    loadInstructionList();
+    showPage('list');
+  } catch(e) { toast('エラー: ' + e.message); }
+}
+
+// ─── 新規作成 / 編集 ─────────────────────────────────────────
+function openCompose(inst) {
+  editingInstId = inst ? inst.id : null;
+  document.getElementById('compose-title-label').textContent = inst ? '指示書を編集' : '新規指示書作成';
+
+  document.getElementById('c-title').value   = inst?.title    || '';
+  document.getElementById('c-cat').value     = inst?.category || '販促';
+  document.getElementById('c-deadline').value= inst?.deadline || '';
+  document.getElementById('c-status').value  = inst?.status   || 'draft';
+  document.getElementById('c-pinned').checked= inst?.pinned === 1;
+  document.getElementById('c-needs-resp').checked = inst?.requires_response === 1;
+  document.getElementById('c-question').value= inst?.response_question || '';
+  document.getElementById('editor-body').innerHTML = inst?.content || '';
+
+  choices = inst?.choices ? [...inst.choices] : ['', ''];
+  renderChoiceList();
+  toggleRespSettings();
+
+  // 配信先
+  const targets = inst?.targets || stores.map(s => s.id);
+  document.querySelectorAll('.store-cb').forEach(cb => {
+    cb.checked = targets.includes(cb.value);
+  });
+  updateTargetCount();
+
+  showPage('compose');
+}
+
+document.getElementById('c-needs-resp').addEventListener('change', toggleRespSettings);
+function toggleRespSettings() {
+  document.getElementById('resp-settings').style.display =
+    document.getElementById('c-needs-resp').checked ? 'block' : 'none';
+}
+
+function renderChoiceList() {
+  document.getElementById('choices-list').innerHTML = choices.map((ch, i) =>
+    `<div style="display:flex;gap:4px;margin-bottom:6px">
+      <input class="form-input" value="${esc(ch)}" oninput="choices[${i}]=this.value" placeholder="選択肢${i+1}" />
+      ${choices.length > 2 ? `<button onclick="choices.splice(${i},1);renderChoiceList()" style="padding:6px 8px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer;color:#aaa;font-family:inherit">×</button>` : ''}
+    </div>`
+  ).join('');
+}
+
+function addChoice() { choices.push(''); renderChoiceList(); }
+
+function renderStoreChecklist() {
+  document.getElementById('store-checklist').innerHTML = stores.map(s =>
+    `<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px">
+      <input type="checkbox" class="store-cb" value="${s.id}" onchange="updateTargetCount()" checked />
+      ${esc(s.name)} <span style="font-size:11px;color:#bbb">${s.area}</span>
+    </label>`
+  ).join('');
+  updateTargetCount();
+}
+
+function selectAllStores(v) {
+  document.querySelectorAll('.store-cb').forEach(cb => cb.checked = v);
+  updateTargetCount();
+}
+
+function updateTargetCount() {
+  const n = document.querySelectorAll('.store-cb:checked').length;
+  document.getElementById('target-count').textContent = `(${n}店舗)`;
+}
+
+document.getElementById('btn-new-inst').onclick = () => openCompose(null);
+document.getElementById('btn-back-list').onclick = () => { showPage('list'); loadInstructionList(); };
+document.getElementById('btn-back-compose').onclick = () => showPage('list');
+
+document.getElementById('btn-publish').onclick = async () => {
+  const title   = document.getElementById('c-title').value.trim();
+  if (!title) { toast('タイトルを入力してください'); return; }
+  const content = document.getElementById('editor-body').innerHTML;
+  const body = {
+    title,
+    category:          document.getElementById('c-cat').value,
+    content,
+    deadline:          document.getElementById('c-deadline').value || null,
+    status:            document.getElementById('c-status').value,
+    pinned:            document.getElementById('c-pinned').checked,
+    requires_response: document.getElementById('c-needs-resp').checked,
+    response_question: document.getElementById('c-question').value,
+    choices:           choices.filter(c => c.trim()),
+    target_stores:     [...document.querySelectorAll('.store-cb:checked')].map(cb => cb.value),
+  };
+  try {
+    if (editingInstId) {
+      await api('PUT', `/api/instructions/${editingInstId}`, body);
+      toast('更新しました');
+    } else {
+      await api('POST', '/api/instructions', body);
+      toast(body.status === 'published' ? '配信しました' : '下書きを保存しました');
+    }
+    showPage('list');
+    loadInstructionList();
+  } catch(e) { toast('エラー: ' + e.message); }
+};
+
+// ─── エディタ ────────────────────────────────────────────────
+const editorEl = document.getElementById('editor-body');
+
+function ed(cmd, val) {
+  editorEl.focus();
+  document.execCommand(cmd, false, val || null);
+}
+
+function edCallout(type) {
+  const M = {
+    info: { bg:'#e8f4fd', bd:'#2196F3', ic:'ℹ' },
+    warn: { bg:'#fff3cd', bd:'#ffc107', ic:'⚠' },
+    imp:  { bg:'#fde8e8', bd:'#f44336', ic:'❗' },
+  };
+  const s = M[type];
+  editorEl.focus();
+  document.execCommand('insertHTML', false,
+    `<div style="background:${s.bg};border-left:4px solid ${s.bd};padding:12px 16px;margin:12px 0;border-radius:0 4px 4px 0"><strong>${s.ic} </strong>ここに入力</div><p><br/></p>`);
+}
+
+// 画像ボタン
+document.getElementById('btn-img-pick').onclick = () => document.getElementById('img-file').click();
+document.getElementById('img-file').onchange = function() {
+  const file = this.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    editorEl.focus();
+    document.execCommand('insertHTML', false,
+      `<img src="${e.target.result}" style="max-width:100%;height:auto;display:block;margin:8px 0;border:1px solid #ddd;border-radius:4px;" />`);
+  };
+  r.readAsDataURL(file);
+  this.value = '';
+};
+
+// 貼り付け（画像）
+editorEl.addEventListener('paste', e => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const r = new FileReader();
+      r.onload = ev => document.execCommand('insertHTML', false,
+        `<img src="${ev.target.result}" style="max-width:100%;height:auto;display:block;margin:8px 0;border:1px solid #ddd;border-radius:4px;" />`);
+      r.readAsDataURL(item.getAsFile());
+    }
+  }
+});
+
+// 表挿入モーダル
+document.getElementById('btn-table-modal').onclick = () => openModal('table-modal');
+
+function doInsertTable() {
+  const r = Math.max(2, parseInt(document.getElementById('tbl-rows').value));
+  const c = Math.max(1, parseInt(document.getElementById('tbl-cols').value));
+  let html = `<table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr>`;
+  for (let j=0;j<c;j++) html += `<th style="border:1px solid #1a2f4a;padding:8px 12px;background:#1a2f4a;color:white;text-align:left">列${j+1}</th>`;
+  html += `</tr></thead><tbody>`;
+  for (let i=1;i<r;i++) {
+    html += '<tr>';
+    for (let j=0;j<c;j++) html += `<td style="border:1px solid #ccc;padding:8px 12px${j===0?';background:#f8f9fa':''}">　</td>`;
+    html += '</tr>';
+  }
+  html += `</tbody></table><p><br/></p>`;
+  editorEl.focus();
+  document.execCommand('insertHTML', false, html);
+  closeModal('table-modal');
+}
+
+// ─── 集計ページ ───────────────────────────────────────────────
+async function loadAggregate() {
+  document.getElementById('agg-kpi').innerHTML  = '<div class="loading">読み込み中...</div>';
+  document.getElementById('agg-inst-body').innerHTML = '';
+  document.getElementById('agg-matrix').innerHTML = '';
+
+  try {
+    const list = await api('GET', '/api/instructions');
+    const respInsts = list.filter(i => i.requires_response && i.status === 'published');
+
+    const kpis = [
+      { label:'配信済み指示書', value:list.filter(i=>i.status==='published').length, color:'#1a2f4a' },
+      { label:'下書き',         value:list.filter(i=>i.status==='draft').length,      color:'#856404' },
+      { label:'全店回答完了',   value:respInsts.filter(i=>i.response_count>=i.targets.length).length, color:'#2e7d32' },
+      { label:'未回答あり',     value:respInsts.filter(i=>i.response_count<i.targets.length).length,  color:'#c62828' },
+    ];
+    document.getElementById('agg-kpi').innerHTML = kpis.map(k =>
+      `<div class="kpi-card"><div class="kpi-val" style="color:${k.color}">${k.value}</div><div class="kpi-lbl">${k.label}</div></div>`
+    ).join('');
+
+    document.getElementById('agg-inst-body').innerHTML = list.map((inst,idx) => {
+      const total  = inst.targets?.length || 0;
+      const read   = inst.read_count || 0;
+      const resp   = inst.response_count || 0;
+      const pct    = total > 0 ? Math.round((resp/total)*100) : 0;
+      const over   = inst.deadline && new Date(inst.deadline) < new Date();
+      return `<tr style="background:${idx%2?'#f8f9fa':'white'};cursor:pointer" onclick="openDetail('${inst.id}');showPage('detail')">
+        <td><div style="font-weight:600;color:#1a2f4a">${esc(inst.title)}</div><div style="font-size:11px;color:#bbb">${esc(inst.created_by_name)}</div></td>
+        <td style="text-align:center"><span class="badge badge-${inst.category}">${inst.category}</span></td>
+        <td style="text-align:center;color:${over?'#d32f2f':'#888'};font-size:12px">${inst.deadline?.replace(/-/g,'/')||'—'}</td>
+        <td style="text-align:center;font-weight:600;color:#1a2f4a">${inst.requires_response?`${read}/${total}`:'—'}</td>
+        <td style="text-align:center;font-weight:600;color:#1a2f4a">${inst.requires_response?`${resp}/${total}`:'—'}</td>
+        <td style="min-width:140px">${inst.requires_response?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${pct>=100?'#4caf50':'#1a2f4a'}"></div></div><span style="font-size:11px;color:#999">${pct}%</span></div>`:'—'}</td>
+      </tr>`;
+    }).join('');
+
+    // マトリクス
+    const thead = `<thead><tr style="background:#1a2f4a;color:white"><th style="padding:10px 14px;text-align:left;white-space:nowrap">店舗</th>${respInsts.map(i=>`<th style="padding:10px 10px"><div style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:normal">${esc(i.title.replace(/【.*?】\s*/g,''))}</div></th>`).join('')}<th style="padding:10px 10px;white-space:nowrap">回答率</th></tr></thead>`;
+    const tbody = stores.map((st,idx) => {
+      const cnt = respInsts.filter(i => {
+        // responses を取得できないので大まかに
+        return true; // 詳細は集計APIで取得
+      }).length;
+      return `<tr style="background:${idx%2?'#f8f9fa':'white'}">
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:600;color:#1a2f4a;white-space:nowrap">${esc(st.name)}</td>
+        ${respInsts.map(() => `<td style="padding:10px 10px;border-bottom:1px solid #eee;text-align:center">—</td>`).join('')}
+        <td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:12px;color:#888">詳細で確認</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('agg-matrix').innerHTML = `<table class="data-table">${thead}<tbody>${tbody}</tbody></table>`;
+  } catch(e) {
+    document.getElementById('agg-kpi').innerHTML = `<div class="empty" style="color:#d32f2f">${e.message}</div>`;
+  }
+}
+
+// ─── 管理ページ ───────────────────────────────────────────────
+async function loadAdmin() {
+  // 店舗
+  const storeRows = stores.map(s =>
+    `<tr><td>${s.id}</td><td>${esc(s.name)}</td><td>${esc(s.area)}</td><td>${s.code||''}</td>
+     <td><button class="btn-secondary btn-sm" onclick="deleteStore('${s.id}')">削除</button></td></tr>`
+  ).join('');
+  document.getElementById('store-table-body').innerHTML = storeRows || '<tr><td colspan="5" style="text-align:center;color:#bbb">店舗なし</td></tr>';
+
+  // ユーザー
+  const users = await api('GET', '/api/users');
+  const userRows = users.map(u =>
+    `<tr><td>${esc(u.username)}</td><td>${esc(u.display_name)}</td>
+     <td>${{admin:'管理者',hq:'本部',store:'店舗'}[u.role]}</td>
+     <td>${u.store_id ? (stores.find(s=>s.id===u.store_id)?.name||u.store_id) : '—'}</td>
+     <td><button class="btn-secondary btn-sm" onclick="deleteUser('${u.id}')">削除</button></td></tr>`
+  ).join('');
+  document.getElementById('user-table-body').innerHTML = userRows || '<tr><td colspan="5" style="text-align:center;color:#bbb">ユーザーなし</td></tr>';
+}
+
+function openStoreModal() {
+  document.getElementById('sm-name').value = '';
+  document.getElementById('sm-area').value = '';
+  document.getElementById('sm-code').value = '';
+  openModal('store-modal');
+}
+
+async function saveStore() {
+  const name = document.getElementById('sm-name').value.trim();
+  if (!name) { toast('店舗名を入力してください'); return; }
+  try {
+    await api('POST', '/api/stores', {
+      name, area: document.getElementById('sm-area').value, code: document.getElementById('sm-code').value
+    });
+    stores = await api('GET', '/api/stores');
+    renderStoreChecklist();
+    closeModal('store-modal');
+    toast('店舗を追加しました');
+    loadAdmin();
+  } catch(e) { toast('エラー: ' + e.message); }
+}
+
+async function deleteStore(id) {
+  if (!confirm('この店舗を削除しますか？')) return;
+  try {
+    await api('DELETE', `/api/stores/${id}`);
+    stores = await api('GET', '/api/stores');
+    renderStoreChecklist();
+    loadAdmin();
+    toast('削除しました');
+  } catch(e) { toast('エラー: ' + e.message); }
+}
+
+function openUserModal() {
+  document.getElementById('um-username').value = '';
+  document.getElementById('um-password').value = '';
+  document.getElementById('um-name').value     = '';
+  document.getElementById('um-role').value     = 'store';
+  updateStoreField();
+  openModal('user-modal');
+}
+
+function updateStoreField() {
+  const role = document.getElementById('um-role').value;
+  const row  = document.getElementById('um-store-row');
+  row.style.display = role === 'store' ? 'block' : 'none';
+  document.getElementById('um-store').innerHTML = stores.map(s =>
+    `<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+async function saveUser() {
+  const username = document.getElementById('um-username').value.trim();
+  const password = document.getElementById('um-password').value;
+  const display_name = document.getElementById('um-name').value.trim();
+  const role     = document.getElementById('um-role').value;
+  if (!username || !password || !display_name) { toast('必須項目を入力してください'); return; }
+  const store_id = role === 'store' ? document.getElementById('um-store').value : null;
+  try {
+    await api('POST', '/api/users', { username, password, display_name, role, store_id });
+    closeModal('user-modal');
+    toast('ユーザーを追加しました');
+    loadAdmin();
+  } catch(e) { toast('エラー: ' + e.message); }
+}
+
+async function deleteUser(id) {
+  if (!confirm('このユーザーを削除しますか？')) return;
+  try {
+    await api('PUT', `/api/users/${id}`, { active: 0 });
+    loadAdmin();
+    toast('削除しました');
+  } catch(e) { toast('エラー: ' + e.message); }
+}
+
+// ─── モーダル ────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('show'); });
+});
+
+// ─── ユーティリティ ──────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── 起動 ────────────────────────────────────────────────────
+(async () => {
+  if (token) {
+    try {
+      me = await api('GET', '/api/auth/me');
+      initApp();
+      return;
+    } catch { token = null; localStorage.removeItem('hc_token'); }
+  }
+  document.getElementById('login-screen').style.display = 'flex';
+})();
+</script>
+</body>
+</html>
