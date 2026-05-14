@@ -1,5 +1,5 @@
 // ============================================================
-//  本部Connect - バックエンドサーバー (sql.js版 ビルド不要)
+//  TurNavi - バックエンドサーバー (sql.js版 ビルド不要)
 //  起動: node server.js
 //  アクセス: http://localhost:3000
 // ============================================================
@@ -72,7 +72,8 @@ async function initDb() {
       content TEXT DEFAULT '', created_by TEXT, created_by_name TEXT DEFAULT '',
       deadline TEXT, requires_response INTEGER DEFAULT 0,
       response_question TEXT DEFAULT '', pinned INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'draft', created_at TEXT, updated_at TEXT
+      status TEXT DEFAULT 'draft', tags TEXT DEFAULT '',
+      created_at TEXT, updated_at TEXT
     );
     CREATE TABLE IF NOT EXISTS instruction_targets (
       instruction_id TEXT NOT NULL, store_id TEXT NOT NULL,
@@ -249,7 +250,8 @@ app.post('/api/instructions',auth,requireHQ,(req,res)=>{
   const {title,category,content,deadline,requires_response,response_question,choices,target_stores,pinned,status}=req.body;
   if(!title) return res.status(400).json({error:'タイトルは必須です'});
   const id=uuidv4(), now=nowStr();
-  db.run('INSERT INTO instructions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,title,category||'その他',content||'',req.user.id,req.user.display_name,deadline||null,requires_response?1:0,response_question||'',pinned?1:0,status||'draft',now,now]);
+  const tagsVal = Array.isArray(tags) ? tags.join(',') : (tags||'');
+  db.run('INSERT INTO instructions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[id,title,category||'その他',content||'',req.user.id,req.user.display_name,deadline||null,requires_response?1:0,response_question||'',pinned?1:0,status||'draft',tagsVal,now,now]);
   (target_stores||[]).forEach(sid=>{try{db.run('INSERT INTO instruction_targets VALUES (?,?)',[id,sid]);}catch{}});
   (choices||[]).forEach((c,i)=>db.run('INSERT INTO instruction_choices (id,instruction_id,choice_text,order_num) VALUES (?,?,?,?)',[uuidv4(),id,c,i]));
   res.json(getInst(id));
@@ -268,8 +270,9 @@ app.get('/api/instructions/:id',auth,(req,res)=>{
 app.put('/api/instructions/:id',auth,requireHQ,(req,res)=>{
   const {title,category,content,deadline,requires_response,response_question,choices,target_stores,pinned,status}=req.body;
   const now=nowStr();
-  db.run('UPDATE instructions SET title=COALESCE(?,title),category=COALESCE(?,category),content=COALESCE(?,content),deadline=?,requires_response=COALESCE(?,requires_response),response_question=COALESCE(?,response_question),pinned=COALESCE(?,pinned),status=COALESCE(?,status),updated_at=? WHERE id=?',
-    [title,category,content,deadline||null,requires_response!=null?requires_response?1:0:null,response_question,pinned!=null?pinned?1:0:null,status,now,req.params.id]);
+  const tagsValU = tags !== undefined ? (Array.isArray(tags) ? tags.join(',') : tags) : null;
+  db.run('UPDATE instructions SET title=COALESCE(?,title),category=COALESCE(?,category),content=COALESCE(?,content),deadline=?,requires_response=COALESCE(?,requires_response),response_question=COALESCE(?,response_question),pinned=COALESCE(?,pinned),status=COALESCE(?,status),tags=COALESCE(?,tags),updated_at=? WHERE id=?',
+    [title,category,content,deadline||null,requires_response!=null?requires_response?1:0:null,response_question,pinned!=null?pinned?1:0:null,status,tagsValU,now,req.params.id]);
   if(target_stores){
     db.run('DELETE FROM instruction_targets WHERE instruction_id=?',[req.params.id]);
     target_stores.forEach(sid=>{try{db.run('INSERT INTO instruction_targets VALUES (?,?)',[req.params.id,sid]);}catch{}});
@@ -337,13 +340,23 @@ app.get('/api/instructions/:id/export',auth,requireHQ,(req,res)=>{
   res.send(csv);
 });
 
+// タグ一覧API
+app.get('/api/tags', auth, (req, res) => {
+  const rows = db.all("SELECT tags FROM instructions WHERE tags != '' AND status='published'");
+  const tagSet = new Set();
+  rows.forEach(r => {
+    if (r.tags) r.tags.split(',').forEach(t => { if (t.trim()) tagSet.add(t.trim()); });
+  });
+  res.json([...tagSet].sort());
+});
+
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 
 // ─── 起動 ────────────────────────────────────────────────────
 initDb().then(()=>{
   app.listen(PORT,'0.0.0.0',()=>{
     console.log('\n========================================');
-    console.log('  本部Connect 起動中');
+    console.log('  TurNavi 起動中');
     console.log(`  http://localhost:${PORT}`);
     console.log('========================================');
     console.log('\n  ログイン情報:');

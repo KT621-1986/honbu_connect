@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0" />
-<title>本部Connect</title>
+<title>TurNavi</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
 *,*::before,*::after{box-sizing:border-box}
@@ -60,6 +60,7 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
 /* モバイル */
 #sidebar{transition:transform .25s}
 @media(max-width:1280px){
+  #sidebar-close-btn{display:block!important}
   #sidebar{position:fixed!important;top:0!important;left:0!important;height:100vh!important;z-index:100!important;transform:translateX(-100%)!important}
   #sidebar.open{transform:translateX(0)!important}
   #sidebar-overlay.show{display:block!important}
@@ -108,7 +109,17 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
 .back-btn{background:none;border:none;color:#1a2f4a;cursor:pointer;font-size:13px;padding:0;margin-bottom:16px;font-family:inherit}
 .detail-header{background:white;border-radius:8px;padding:20px;margin-bottom:14px;border:1px solid #e0e0e0}
 .detail-body{background:white;border-radius:8px;padding:28px 32px;margin-bottom:14px;border:1px solid #e0e0e0;line-height:1.8;font-size:14px;color:#333}
-.detail-body img{max-width:100%;height:auto;border:1px solid #ddd;border-radius:4px;margin:4px 0}
+.detail-body img{height:auto;border:1px solid #ddd;border-radius:4px;margin:4px 0;display:block}
+/* ── 画像スライダー ── */
+.img-scroll-wrap{position:relative;margin:12px 0;background:#f8f9fa;border:1px solid #ddd;border-radius:8px;overflow:hidden}
+.img-scroll-inner{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.img-scroll-inner::-webkit-scrollbar{display:none}
+.img-scroll-inner img{max-width:none!important;height:auto;display:block;margin:0}
+.img-scroll-bar-wrap{padding:6px 10px 8px;background:#f0f0f0;border-top:1px solid #ddd}
+.img-scroll-bar{width:100%;height:4px;-webkit-appearance:none;appearance:none;background:#ddd;border-radius:2px;outline:none;cursor:pointer}
+.img-scroll-bar::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:#1a2f4a;border-radius:50%;cursor:pointer}
+.img-scroll-bar::-moz-range-thumb{width:20px;height:20px;background:#1a2f4a;border-radius:50%;cursor:pointer;border:none}
+.img-size-badge{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.5);color:white;font-size:10px;padding:2px 6px;border-radius:10px}
 .response-box{background:white;border-radius:8px;padding:20px 24px;border:2px solid #1a2f4a;margin-bottom:14px}
 .choice-btn{padding:10px 22px;border:2px solid #1a2f4a;border-radius:6px;background:white;color:#1a2f4a;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all .15s;margin:4px}
 .choice-btn:hover{background:#1a2f4a;color:white}
@@ -135,6 +146,14 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
 .form-input:focus{border-color:#1a2f4a}
 .form-select{width:100%;padding:8px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:13px;font-family:inherit;background:white;outline:none}
 .checkbox-label{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+/* ── 集計タブ ── */
+.agg-tab{padding:10px 18px;border:none;background:transparent;color:#888;font-size:13px;cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:500}
+.agg-tab.active{color:#1a2f4a;border-bottom-color:#1a2f4a;font-weight:700}
+.agg-tab:hover{color:#1a2f4a}
+.agg-tab-content{display:block}
+@media(max-width:1280px){
+  #agg-ranking-grid{grid-template-columns:1fr!important}
+}
 /* ── 集計 ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
 .kpi-card{background:white;border:1px solid #e0e0e0;border-radius:8px;padding:16px;text-align:center}
@@ -158,6 +177,13 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
 /* ── 読込み ── */
 .loading{display:flex;align-items:center;justify-content:center;height:200px;color:#aaa;font-size:15px}
 .empty{text-align:center;padding:60px;color:#bbb;font-size:15px}
+/* ── ハッシュタグ ── */
+.tag-chip{display:inline-flex;align-items:center;gap:4px;background:#e8f0fe;color:#1a56db;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;cursor:default}
+.tag-chip .remove{cursor:pointer;color:#6b7280;font-size:14px;line-height:1}
+.tag-chip .remove:hover{color:#d32f2f}
+.tag-dropdown-item{padding:8px 14px;font-size:13px;cursor:pointer;color:#333;display:flex;align-items:center;gap:6px}
+.tag-dropdown-item:hover{background:#f0f4ff}
+.tag-badge{display:inline-block;background:#e8f0fe;color:#1a56db;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600;margin:2px}
 /* ── 通知トースト ── */
 #toast{position:fixed;bottom:24px;right:24px;background:#1a2f4a;color:white;padding:12px 20px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
 #toast.show{opacity:1;transform:translateY(0)}
@@ -184,8 +210,11 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
 <!-- ログイン画面 -->
 <div id="login-screen">
   <div class="login-box">
-    <h1>本部Connect</h1>
-    <p>店舗指示管理システム</p>
+    <div style="margin-bottom:20px">
+      <h1 style="font-size:28px;font-weight:900;color:#1a2f4a;letter-spacing:1px;font-family:inherit;transform:skewX(-8deg);display:inline-block;margin-bottom:4px">TurNavi</h1>
+      <p style="font-size:11px;color:#bbb;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Store Instruction System</p>
+      <p style="font-size:11px;color:#ccc;margin-bottom:0">カスタマイズ無限大の、次世代指示ツール</p>
+    </div>
     <label>ユーザー名</label>
     <input type="text" id="login-user" placeholder="例: admin" autocomplete="username" />
     <label>パスワード</label>
@@ -200,7 +229,7 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
   <!-- モバイルヘッダー -->
   <div id="mobile-header">
     <div>
-      <div class="mh-title">本部Connect</div>
+      <div class="mh-title">TurNavi</div>
       <div class="mh-user" id="mh-user"></div>
     </div>
     <button class="hamburger" id="hamburger-btn">☰</button>
@@ -210,9 +239,13 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
   <div id="main-body">
   <!-- サイドバー -->
   <div id="sidebar">
-    <div class="sb-logo">
-      <div class="name">本部Connect</div>
-      <div class="sub">店舗指示管理システム</div>
+    <div class="sb-logo" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="name" style="transform:skewX(-6deg);display:inline-block">TurNavi</div>
+        <div class="sub">店舗指示管理システム</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.2);margin-top:2px;letter-spacing:1px">次世代指示ツール</div>
+      </div>
+      <button onclick="closeSidebar()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:4px;display:none" id="sidebar-close-btn">✕</button>
     </div>
     <div class="sb-user">
       <div class="uname" id="sb-uname">—</div>
@@ -221,7 +254,7 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
     <nav class="sb-nav" id="sidebar-nav"></nav>
     <div class="sb-foot">
       <button class="logout-btn" id="logout-btn">ログアウト</button>
-      v1.0.0 © 2026 本部Connect
+      v1.0.0 © 2026 TurNavi
     </div>
   </div>
 
@@ -232,6 +265,50 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
       <div class="page-header">
         <div><h2 id="list-title">指示書一覧</h2><p id="list-sub"></p></div>
         <button class="btn-primary" id="btn-new-inst" style="display:none">＋ 新規作成</button>
+      </div>
+      <!-- フィルター・ソートバー -->
+      <div id="filter-bar" style="background:white;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+        <!-- 検索 -->
+        <div style="flex:1;min-width:150px;position:relative">
+          <input id="filter-search" placeholder="🔍 キーワード / #タグ検索" oninput="onSearchInput(this);applyFilter()"
+            style="width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;outline:none" />
+          <div id="search-tag-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:200;max-height:180px;overflow-y:auto;margin-top:2px"></div>
+        </div>
+        <!-- カテゴリ -->
+        <select id="filter-cat" onchange="applyFilter()"
+          style="padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;background:white">
+          <option value="">📂 全カテゴリ</option>
+          <option value="販促">販促</option>
+          <option value="設備">設備</option>
+          <option value="人事・労務">人事・労務</option>
+          <option value="商品">商品</option>
+          <option value="安全・衛生">安全・衛生</option>
+          <option value="その他">その他</option>
+        </select>
+        <!-- 既読状態 -->
+        <select id="filter-read" onchange="applyFilter()"
+          style="padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;background:white">
+          <option value="">👁 全て</option>
+          <option value="unread">未読のみ</option>
+          <option value="read">既読のみ</option>
+          <option value="unanswered">未回答のみ</option>
+          <option value="answered">回答済みのみ</option>
+        </select>
+        <!-- ソート -->
+        <select id="filter-sort" onchange="applyFilter()"
+          style="padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;background:white">
+          <option value="date_desc">📅 新しい順</option>
+          <option value="date_asc">📅 古い順</option>
+          <option value="deadline_asc">⏰ 期限が近い順</option>
+          <option value="deadline_desc">⏰ 期限が遠い順</option>
+          <option value="title_asc">🔤 タイトル昇順</option>
+          <option value="title_desc">🔤 タイトル降順</option>
+        </select>
+        <!-- リセット -->
+        <button onclick="resetFilter()"
+          style="padding:7px 12px;border:1px solid #ddd;border-radius:6px;font-size:12px;background:white;cursor:pointer;font-family:inherit;color:#888">
+          ✕ リセット
+        </button>
       </div>
       <div id="inst-list"></div>
     </div>
@@ -311,6 +388,16 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
             </select>
             <label class="form-label">期限日</label>
             <input type="date" class="form-input" id="c-deadline" style="margin-bottom:12px" />
+            <label class="form-label">ハッシュタグ</label>
+            <div style="position:relative;margin-bottom:12px">
+              <div id="tag-input-area" style="min-height:36px;border:1.5px solid #e0e0e0;border-radius:6px;padding:4px 8px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;cursor:text;background:white" onclick="document.getElementById('tag-input').focus()">
+                <div id="tag-chips"></div>
+                <input id="tag-input" placeholder="#タグを入力" autocomplete="off"
+                  style="border:none;outline:none;font-size:13px;font-family:inherit;min-width:100px;flex:1;padding:2px 4px"
+                  oninput="onTagInput(this)" onkeydown="onTagKeydown(event)" />
+              </div>
+              <div id="tag-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:180px;overflow-y:auto"></div>
+            </div>
             <label class="form-label">ステータス</label>
             <select class="form-select" id="c-status" style="margin-bottom:12px">
               <option value="draft">下書き</option>
@@ -349,11 +436,77 @@ html,body{margin:0;padding:0;height:100%;font-family:'Noto Sans JP','Hiragino Ka
     <!-- 集計 -->
     <div class="page" id="page-aggregate">
       <div class="page-header"><div><h2>集計・分析</h2></div></div>
+
+      <!-- 期間フィルター -->
+      <div style="background:white;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+        <label style="font-size:13px;color:#555;font-weight:600">期間：</label>
+        <select id="agg-period" onchange="loadAggregate()" style="padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;background:white">
+          <option value="all">全期間</option>
+          <option value="7">直近7日</option>
+          <option value="30" selected>直近30日</option>
+          <option value="90">直近90日</option>
+        </select>
+        <select id="agg-cat-filter" onchange="loadAggregate()" style="padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;background:white">
+          <option value="">全カテゴリ</option>
+          <option value="販促">販促</option>
+          <option value="設備">設備</option>
+          <option value="人事・労務">人事・労務</option>
+          <option value="商品">商品</option>
+          <option value="安全・衛生">安全・衛生</option>
+          <option value="その他">その他</option>
+        </select>
+        <button onclick="loadAggregate()" style="padding:7px 14px;background:#1a2f4a;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">更新</button>
+      </div>
+
+      <!-- KPIカード -->
       <div class="kpi-grid" id="agg-kpi"></div>
-      <h3 style="font-size:15px;color:#1a2f4a;margin:0 0 12px">指示書別 回答状況</h3>
-      <div class="agg-table-wrap"><table class="data-table" id="agg-inst-table"><thead><tr><th>指示書</th><th style="text-align:center">カテゴリ</th><th style="text-align:center">期限</th><th style="text-align:center">既読</th><th style="text-align:center">回答</th><th>進捗</th></tr></thead><tbody id="agg-inst-body"></tbody></table></div>
-      <h3 style="font-size:15px;color:#1a2f4a;margin:0 0 12px">店舗別 回答マトリクス</h3>
-      <div class="agg-table-wrap" style="overflow-x:auto"><div id="agg-matrix"></div></div>
+
+      <!-- タブ -->
+      <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid #e0e0e0">
+        <button class="agg-tab active" data-tab="overview" onclick="switchAggTab('overview')">📊 概要</button>
+        <button class="agg-tab" data-tab="ranking"  onclick="switchAggTab('ranking')">🏆 ランキング</button>
+        <button class="agg-tab" data-tab="category" onclick="switchAggTab('category')">📂 カテゴリ別</button>
+        <button class="agg-tab" data-tab="matrix"   onclick="switchAggTab('matrix')">🗂 マトリクス</button>
+        <button class="agg-tab" data-tab="unread"   onclick="switchAggTab('unread')">⚠ 未回答</button>
+      </div>
+
+      <!-- 概要タブ -->
+      <div id="agg-tab-overview" class="agg-tab-content">
+        <h3 style="font-size:15px;color:#1a2f4a;margin:0 0 12px">指示書別 回答状況</h3>
+        <div class="agg-table-wrap"><table class="data-table"><thead><tr><th>指示書</th><th style="text-align:center">カテゴリ</th><th style="text-align:center">期限</th><th style="text-align:center">既読</th><th style="text-align:center">回答</th><th>進捗</th></tr></thead><tbody id="agg-inst-body"></tbody></table></div>
+      </div>
+
+      <!-- ランキングタブ -->
+      <div id="agg-tab-ranking" class="agg-tab-content" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="agg-ranking-grid">
+          <div class="agg-table-wrap">
+            <div style="padding:12px 16px;border-bottom:1px solid #eee;font-weight:700;color:#1a2f4a;font-size:14px">🥇 回答率ランキング（高い順）</div>
+            <div id="agg-rank-high"></div>
+          </div>
+          <div class="agg-table-wrap">
+            <div style="padding:12px 16px;border-bottom:1px solid #eee;font-weight:700;color:#d32f2f;font-size:14px">⚠ 未回答ランキング（多い順）</div>
+            <div id="agg-rank-low"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- カテゴリ別タブ -->
+      <div id="agg-tab-category" class="agg-tab-content" style="display:none">
+        <h3 style="font-size:15px;color:#1a2f4a;margin:0 0 12px">カテゴリ別 配信・回答状況</h3>
+        <div id="agg-category-chart"></div>
+      </div>
+
+      <!-- マトリクスタブ -->
+      <div id="agg-tab-matrix" class="agg-tab-content" style="display:none">
+        <h3 style="font-size:15px;color:#1a2f4a;margin:0 0 12px">店舗別 回答マトリクス</h3>
+        <div class="agg-table-wrap" style="overflow-x:auto"><div id="agg-matrix"></div></div>
+      </div>
+
+      <!-- 未回答タブ -->
+      <div id="agg-tab-unread" class="agg-tab-content" style="display:none">
+        <h3 style="font-size:15px;color:#1a2f4a;margin:0 0 12px">未回答店舗一覧</h3>
+        <div id="agg-unread-list"></div>
+      </div>
     </div>
 
     <!-- 管理 -->
@@ -525,6 +678,7 @@ async function initApp() {
   buildNav();
   stores = await api('GET', '/api/stores');
   renderStoreChecklist();
+  await loadTags();
 
   if (me.role !== 'store') {
     document.getElementById('btn-new-inst').style.display = 'inline-block';
@@ -561,19 +715,7 @@ function closeSidebar() {
     if (dx < -50 && dy < 60) closeSidebar();
   }, { passive: true });
 
-  // 画面左端からスワイプでサイドバーを開く
-  document.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-  }, { passive: true });
-  document.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - startX;
-    const dy = Math.abs(e.changedTouches[0].clientY - startY);
-    if (startX < 20 && dx > 50 && dy < 60) {
-      document.getElementById('sidebar').classList.add('open');
-      document.getElementById('sidebar-overlay').classList.add('show');
-    }
-  }, { passive: true });
+
 })();
 
 function navAction(id) {
@@ -643,27 +785,107 @@ function updateUnreadBadge(count) {
 }
 
 // ─── 指示書一覧 ──────────────────────────────────────────────
-async function loadInstructionList() {
-  document.getElementById('inst-list').innerHTML = '<div class="loading">読み込み中...</div>';
-  try {
-    const list = await api('GET', '/api/instructions');
+let _allInstructions = [];
+let _allTags = [];
+let _composeTags = [];
 
-    if (me.role === 'store') {
-      document.getElementById('list-title').textContent = '受信した指示書';
-      const unread = list.filter(i => !i.my_read).length;
-      document.getElementById('list-sub').textContent = `${list.length}件（未読 ${unread}件）`;
-      updateUnreadBadge(unread);
-    } else {
-      document.getElementById('list-title').textContent = '配信済み指示書';
-      document.getElementById('list-sub').textContent = `全${list.length}件`;
-    }
+// ─── ハッシュタグ機能 ────────────────────────────────────────────
+async function loadTags() {
+  try { _allTags = await api('GET', '/api/tags'); } catch {}
+}
 
-    if (list.length === 0) {
-      document.getElementById('inst-list').innerHTML = '<div class="empty">指示書はまだありません</div>';
-      return;
-    }
+function renderTagChips() {
+  const area = document.getElementById('tag-chips');
+  if (!area) return;
+  area.innerHTML = _composeTags.map((tag, i) =>
+    `<span class="tag-chip">${esc(tag)}<span class="remove" onclick="removeTag(${i})">×</span></span>`
+  ).join('');
+}
 
-    document.getElementById('inst-list').innerHTML = list.map(inst => {
+function removeTag(i) {
+  _composeTags.splice(i, 1);
+  renderTagChips();
+}
+
+function onTagInput(el) {
+  const val = el.value.trim();
+  const dropdown = document.getElementById('tag-dropdown');
+  if (!val) { dropdown.style.display = 'none'; return; }
+
+  const q = val.startsWith('#') ? val.slice(1).toLowerCase() : val.toLowerCase();
+  const matches = _allTags.filter(t => t.replace('#','').toLowerCase().includes(q) && !_composeTags.includes(t));
+
+  if (matches.length === 0) { dropdown.style.display = 'none'; return; }
+
+  dropdown.innerHTML = matches.map(t =>
+    `<div class="tag-dropdown-item" onclick="selectComposeTag('${esc(t)}')">🏷 ${esc(t)}</div>`
+  ).join('');
+  dropdown.style.display = 'block';
+}
+
+function selectComposeTag(tag) {
+  if (!_composeTags.includes(tag)) _composeTags.push(tag);
+  renderTagChips();
+  const input = document.getElementById('tag-input');
+  if (input) input.value = '';
+  document.getElementById('tag-dropdown').style.display = 'none';
+}
+
+function onTagKeydown(e) {
+  const input = e.target;
+  if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+    e.preventDefault();
+    let val = input.value.trim().replace(/,$/, '');
+    if (!val) return;
+    if (!val.startsWith('#')) val = '#' + val;
+    if (!_composeTags.includes(val)) _composeTags.push(val);
+    renderTagChips();
+    input.value = '';
+    document.getElementById('tag-dropdown').style.display = 'none';
+  }
+}
+
+// 検索欄のハッシュタグオートコンプリート
+function onSearchInput(el) {
+  const val = el.value;
+  const dropdown = document.getElementById('search-tag-dropdown');
+  const lastHash = val.lastIndexOf('#');
+  if (lastHash === -1) { dropdown.style.display = 'none'; return; }
+
+  const q = val.slice(lastHash + 1).toLowerCase();
+  const matches = _allTags.filter(t => t.replace('#','').toLowerCase().startsWith(q));
+  if (matches.length === 0) { dropdown.style.display = 'none'; return; }
+
+  dropdown.innerHTML = matches.map(t =>
+    `<div class="tag-dropdown-item" onclick="selectSearchTag('${esc(t)}')"># ${esc(t.replace('#',''))}</div>`
+  ).join('');
+  dropdown.style.display = 'block';
+}
+
+function selectSearchTag(tag) {
+  const input = document.getElementById('filter-search');
+  const val = input.value;
+  const lastHash = val.lastIndexOf('#');
+  input.value = val.slice(0, lastHash) + tag + ' ';
+  document.getElementById('search-tag-dropdown').style.display = 'none';
+  applyFilter();
+  input.focus();
+}
+
+// 外クリックでドロップダウン閉じる
+document.addEventListener('click', e => {
+  if (!e.target.closest('#tag-input-area') && !e.target.closest('#tag-dropdown'))
+    document.getElementById('tag-dropdown')?.style && (document.getElementById('tag-dropdown').style.display = 'none');
+  if (!e.target.closest('#filter-search') && !e.target.closest('#search-tag-dropdown'))
+    document.getElementById('search-tag-dropdown')?.style && (document.getElementById('search-tag-dropdown').style.display = 'none');
+});
+
+function renderInstList(list) {
+  if (list.length === 0) {
+    document.getElementById('inst-list').innerHTML = '<div class="empty">条件に一致する指示書はありません</div>';
+    return;
+  }
+  document.getElementById('inst-list').innerHTML = list.map(inst => {
       const over  = inst.deadline && new Date(inst.deadline) < new Date();
       const total = inst.targets?.length || 0;
 
@@ -685,7 +907,8 @@ async function loadInstructionList() {
       return `<div class="card inst-card clickable ${inst.pinned?'pinned':''}" onclick="openDetail('${inst.id}')">
         ${inst.pinned ? '<span class="pin-icon">📌</span>' : ''}
         <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">${badges}</div>
-        <div style="font-size:15px;font-weight:600;color:#1a2f4a;margin-bottom:8px">${esc(inst.title)}</div>
+        <div style="font-size:15px;font-weight:600;color:#1a2f4a;margin-bottom:6px">${esc(inst.title)}</div>
+        ${inst.tags ? inst.tags.split(',').filter(t=>t.trim()).map(t=>`<span class="tag-badge">${esc(t)}</span>`).join('') : ''}
         <div class="inst-meta">
           <span>${esc(inst.created_by_name)}</span>
           <span>配信: ${inst.created_at.slice(0,10).replace(/-/g,'/')}</span>
@@ -694,9 +917,102 @@ async function loadInstructionList() {
         </div>
       </div>`;
     }).join('');
+}
+
+async function loadInstructionList() {
+  document.getElementById('inst-list').innerHTML = '<div class="loading">読み込み中...</div>';
+  try {
+    const list = await api('GET', '/api/instructions');
+    _allInstructions = list;
+
+    if (me.role === 'store') {
+      document.getElementById('list-title').textContent = '受信した指示書';
+      const unread = list.filter(i => !i.my_read).length;
+      document.getElementById('list-sub').textContent = `${list.length}件（未読 ${unread}件）`;
+      updateUnreadBadge(unread);
+    } else {
+      document.getElementById('list-title').textContent = '配信済み指示書';
+      document.getElementById('list-sub').textContent = `全${list.length}件`;
+    }
+
+    applyFilter();
   } catch(e) {
     document.getElementById('inst-list').innerHTML = `<div class="empty" style="color:#d32f2f">${e.message}</div>`;
   }
+}
+
+function applyFilter() {
+  let list = [..._allInstructions];
+  const search   = (document.getElementById('filter-search')?.value || '').toLowerCase();
+  const cat      = document.getElementById('filter-cat')?.value || '';
+  const readF    = document.getElementById('filter-read')?.value || '';
+  const sortV    = document.getElementById('filter-sort')?.value || 'date_desc';
+
+  // キーワード検索（#タグ対応）
+  if (search) {
+    const tagMatches = search.match(/#[^\s#]+/g) || [];
+    const keywords = search.replace(/#[^\s#]+/g, '').trim().toLowerCase();
+    if (tagMatches.length > 0) {
+      list = list.filter(i => {
+        const iTags = (i.tags||'').toLowerCase();
+        return tagMatches.every(t => iTags.includes(t.toLowerCase()));
+      });
+    }
+    if (keywords) {
+      list = list.filter(i => i.title.toLowerCase().includes(keywords) || (i.created_by_name||'').toLowerCase().includes(keywords));
+    }
+  }
+
+  // カテゴリ
+  if (cat) list = list.filter(i => i.category === cat);
+
+  // 既読・回答状態（店舗のみ）
+  if (readF && me.role === 'store') {
+    if (readF === 'unread')     list = list.filter(i => !i.my_read);
+    if (readF === 'read')       list = list.filter(i => i.my_read);
+    if (readF === 'unanswered') list = list.filter(i => i.requires_response && !i.my_response);
+    if (readF === 'answered')   list = list.filter(i => i.my_response);
+  }
+  if (readF && me.role !== 'store') {
+    if (readF === 'unanswered') list = list.filter(i => i.requires_response && i.response_count < (i.targets?.length||0));
+    if (readF === 'answered')   list = list.filter(i => !i.requires_response || i.response_count >= (i.targets?.length||0));
+  }
+
+  // ソート
+  list.sort((a, b) => {
+    switch(sortV) {
+      case 'date_desc':     return new Date(b.created_at) - new Date(a.created_at);
+      case 'date_asc':      return new Date(a.created_at) - new Date(b.created_at);
+      case 'deadline_asc':  return (a.deadline||'9999') < (b.deadline||'9999') ? -1 : 1;
+      case 'deadline_desc': return (a.deadline||'0000') > (b.deadline||'0000') ? -1 : 1;
+      case 'title_asc':     return a.title.localeCompare(b.title, 'ja');
+      case 'title_desc':    return b.title.localeCompare(a.title, 'ja');
+      default: return 0;
+    }
+  });
+
+  // 件数更新
+  const filterBar = document.getElementById('filter-bar');
+  const countEl   = document.getElementById('filter-count');
+  if (!countEl && filterBar) {
+    const el = document.createElement('span');
+    el.id = 'filter-count';
+    el.style.cssText = 'font-size:12px;color:#888;margin-left:auto';
+    filterBar.appendChild(el);
+  }
+  if (document.getElementById('filter-count')) {
+    document.getElementById('filter-count').textContent = `${list.length}件表示`;
+  }
+
+  renderInstList(list);
+}
+
+function resetFilter() {
+  document.getElementById('filter-search').value = '';
+  document.getElementById('filter-cat').value    = '';
+  document.getElementById('filter-read').value   = '';
+  document.getElementById('filter-sort').value   = 'date_desc';
+  applyFilter();
 }
 
 // ─── 詳細 ────────────────────────────────────────────────────
@@ -758,10 +1074,13 @@ async function openDetail(id) {
         <h1 style="margin:0 0 10px;font-size:22px;color:#1a2f4a;font-weight:700">${esc(inst.title)}</h1>
         <div style="font-size:13px;color:#999">${esc(inst.created_by_name)} ・ 配信日: ${inst.created_at.slice(0,10).replace(/-/g,'/')}</div>
       </div>
-      <div class="detail-body">${inst.content}</div>
+      <div class="detail-body" id="detail-body-content">${inst.content}</div>
       ${readSection}
       ${respSection}
     `;
+
+    // 画像をスライダーラッパーに変換
+    wrapDetailImages();
 
     document.getElementById('btn-edit-inst').onclick = () => openCompose(inst);
     document.getElementById('btn-del-inst').onclick  = () => delInst(id);
@@ -829,6 +1148,77 @@ async function doRespond(answer) {
   } catch(e) { toast('エラー: ' + e.message); }
 }
 
+// ─── 画像スライダー変換 ────────────────────────────────────────
+function wrapDetailImages() {
+  const body = document.getElementById('detail-body-content');
+  if (!body) return;
+
+  const imgs = body.querySelectorAll('img');
+  imgs.forEach((img, idx) => {
+    const wrapId   = `img-wrap-${idx}`;
+    const sliderId = `img-slider-${idx}`;
+
+    // ラッパー作成
+    const wrap = document.createElement('div');
+    wrap.className = 'img-scroll-wrap';
+
+    const inner = document.createElement('div');
+    inner.className = 'img-scroll-inner';
+    inner.id = wrapId;
+
+    // 元のimgスタイルをリセット（max-width制限を外す）
+    img.style.maxWidth = 'none';
+    img.style.display  = 'block';
+
+    // ラッパーに画像を移動
+    img.parentNode.insertBefore(wrap, img);
+    inner.appendChild(img);
+    wrap.appendChild(inner);
+
+    // 画像が読み込まれたらスライダーを設定
+    const setupSlider = () => {
+      const naturalW  = img.naturalWidth;
+      const containerW = inner.clientWidth;
+
+      // 画像が画面より大きい場合のみスライダーを表示
+      if (naturalW > containerW) {
+        // サイズバッジ
+        const badge = document.createElement('div');
+        badge.className = 'img-size-badge';
+        badge.textContent = `${naturalW}px`;
+        wrap.appendChild(badge);
+
+        // スライダーバー
+        const barWrap = document.createElement('div');
+        barWrap.className = 'img-scroll-bar-wrap';
+        barWrap.innerHTML = `
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:10px;color:#888;white-space:nowrap">← スライド →</span>
+            <input type="range" class="img-scroll-bar" id="${sliderId}" min="0" max="${naturalW - containerW}" value="0" step="1" />
+          </div>`;
+        wrap.appendChild(barWrap);
+
+        // スライダー操作でスクロール
+        document.getElementById(sliderId).addEventListener('input', e => {
+          inner.scrollLeft = parseInt(e.target.value);
+        });
+
+        // スクロールでスライダーも動く
+        inner.addEventListener('scroll', () => {
+          const slider = document.getElementById(sliderId);
+          if (slider) slider.value = inner.scrollLeft;
+        });
+      }
+    };
+
+    if (img.complete && img.naturalWidth > 0) {
+      setupSlider();
+    } else {
+      img.addEventListener('load', setupSlider);
+    }
+  });
+}
+
 async function delInst(id) {
   if (!confirm('この指示書を削除しますか？')) return;
   try {
@@ -852,6 +1242,12 @@ function openCompose(inst) {
   document.getElementById('c-needs-resp').checked = inst?.requires_response === 1;
   document.getElementById('c-question').value= inst?.response_question || '';
   document.getElementById('editor-body').innerHTML = inst?.content || '';
+
+  // タグ初期化
+  _composeTags = inst?.tags ? inst.tags.split(',').filter(t=>t.trim()) : [];
+  renderTagChips();
+  const tagInput = document.getElementById('tag-input');
+  if (tagInput) tagInput.value = '';
 
   choices = inst?.choices ? [...inst.choices] : ['', ''];
   renderChoiceList();
@@ -923,6 +1319,7 @@ document.getElementById('btn-publish').onclick = async () => {
     response_question: document.getElementById('c-question').value,
     choices:           choices.filter(c => c.trim()),
     target_stores:     [...document.querySelectorAll('.store-cb:checked')].map(cb => cb.value),
+    tags:              _composeTags,
   };
   try {
     if (editingInstId) {
@@ -1007,59 +1404,257 @@ function doInsertTable() {
 }
 
 // ─── 集計ページ ───────────────────────────────────────────────
+function switchAggTab(tab) {
+  document.querySelectorAll('.agg-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.agg-tab-content').forEach(el => el.style.display = 'none');
+  document.getElementById('agg-tab-' + tab).style.display = 'block';
+}
+
 async function loadAggregate() {
-  document.getElementById('agg-kpi').innerHTML  = '<div class="loading">読み込み中...</div>';
-  document.getElementById('agg-inst-body').innerHTML = '';
-  document.getElementById('agg-matrix').innerHTML = '';
+  document.getElementById('agg-kpi').innerHTML = '<div class="loading">読み込み中...</div>';
 
   try {
     const list = await api('GET', '/api/instructions');
-    const respInsts = list.filter(i => i.requires_response && i.status === 'published');
+    const period  = document.getElementById('agg-period')?.value || 'all';
+    const catF    = document.getElementById('agg-cat-filter')?.value || '';
+
+    // 期間フィルター
+    let filtered = list.filter(i => i.status === 'published');
+    if (period !== 'all') {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - parseInt(period));
+      filtered = filtered.filter(i => new Date(i.created_at) >= cutoff);
+    }
+    if (catF) filtered = filtered.filter(i => i.category === catF);
+
+    const respInsts = filtered.filter(i => i.requires_response);
+
+    // ── KPI ──
+    const totalResp   = respInsts.length;
+    const allDone     = respInsts.filter(i => i.response_count >= (i.targets?.length||1)).length;
+    const totalRead   = filtered.reduce((s,i) => s + (i.read_count||0), 0);
+    const totalTarget = filtered.reduce((s,i) => s + (i.targets?.length||0), 0);
+    const avgRead     = totalTarget > 0 ? Math.round((totalRead/totalTarget)*100) : 0;
 
     const kpis = [
-      { label:'配信済み指示書', value:list.filter(i=>i.status==='published').length, color:'#1a2f4a' },
-      { label:'下書き',         value:list.filter(i=>i.status==='draft').length,      color:'#856404' },
-      { label:'全店回答完了',   value:respInsts.filter(i=>i.response_count>=i.targets.length).length, color:'#2e7d32' },
-      { label:'未回答あり',     value:respInsts.filter(i=>i.response_count<i.targets.length).length,  color:'#c62828' },
+      { label:'配信済み指示書',   value: filtered.length,         color:'#1a2f4a',  icon:'📋' },
+      { label:'全店回答完了',     value: allDone,                 color:'#2e7d32',  icon:'✅' },
+      { label:'未回答あり',       value: totalResp - allDone,     color:'#c62828',  icon:'⚠' },
+      { label:'平均既読率',       value: avgRead + '%',           color:'#1565c0',  icon:'👁' },
     ];
     document.getElementById('agg-kpi').innerHTML = kpis.map(k =>
-      `<div class="kpi-card"><div class="kpi-val" style="color:${k.color}">${k.value}</div><div class="kpi-lbl">${k.label}</div></div>`
+      `<div class="kpi-card"><div style="font-size:22px;margin-bottom:4px">${k.icon}</div><div class="kpi-val" style="color:${k.color};font-size:28px">${k.value}</div><div class="kpi-lbl">${k.label}</div></div>`
     ).join('');
 
-    document.getElementById('agg-inst-body').innerHTML = list.map((inst,idx) => {
-      const total  = inst.targets?.length || 0;
-      const read   = inst.read_count || 0;
-      const resp   = inst.response_count || 0;
-      const pct    = total > 0 ? Math.round((resp/total)*100) : 0;
-      const over   = inst.deadline && new Date(inst.deadline) < new Date();
+    // ── 概要：指示書別 ──
+    document.getElementById('agg-inst-body').innerHTML = filtered.map((inst,idx) => {
+      const total = inst.targets?.length || 0;
+      const read  = inst.read_count || 0;
+      const resp  = inst.response_count || 0;
+      const pct   = total > 0 ? Math.round((resp/total)*100) : 0;
+      const over  = inst.deadline && new Date(inst.deadline) < new Date();
       return `<tr style="background:${idx%2?'#f8f9fa':'white'};cursor:pointer" onclick="openDetail('${inst.id}');showPage('detail')">
         <td><div style="font-weight:600;color:#1a2f4a">${esc(inst.title)}</div><div style="font-size:11px;color:#bbb">${esc(inst.created_by_name)}</div></td>
         <td style="text-align:center"><span class="badge badge-${inst.category}">${inst.category}</span></td>
         <td style="text-align:center;color:${over?'#d32f2f':'#888'};font-size:12px">${inst.deadline?.replace(/-/g,'/')||'—'}</td>
         <td style="text-align:center;font-weight:600;color:#1a2f4a">${inst.requires_response?`${read}/${total}`:'—'}</td>
         <td style="text-align:center;font-weight:600;color:#1a2f4a">${inst.requires_response?`${resp}/${total}`:'—'}</td>
-        <td style="min-width:140px">${inst.requires_response?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${pct>=100?'#4caf50':'#1a2f4a'}"></div></div><span style="font-size:11px;color:#999">${pct}%</span></div>`:'—'}</td>
+        <td style="min-width:120px">${inst.requires_response?`<div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${pct>=100?'#4caf50':'#1a2f4a'}"></div></div><span style="font-size:11px;color:#999">${pct}%</span></div>`:'—'}</td>
       </tr>`;
-    }).join('');
+    }).join('') || '<tr><td colspan="6" style="text-align:center;color:#bbb;padding:20px">データがありません</td></tr>';
 
-    // マトリクス
-    const thead = `<thead><tr style="background:#1a2f4a;color:white"><th style="padding:10px 14px;text-align:left;white-space:nowrap">店舗</th>${respInsts.map(i=>`<th style="padding:10px 10px"><div style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:normal">${esc(i.title.replace(/【.*?】\s*/g,''))}</div></th>`).join('')}<th style="padding:10px 10px;white-space:nowrap">回答率</th></tr></thead>`;
-    const tbody = stores.map((st,idx) => {
-      const cnt = respInsts.filter(i => {
-        // responses を取得できないので大まかに
-        return true; // 詳細は集計APIで取得
-      }).length;
+    // ── ランキング ──
+    // 店舗別に回答率を集計
+    const storeStats = {};
+    stores.forEach(s => { storeStats[s.id] = { name:s.name, area:s.area, answered:0, total:0, unanswered:0 }; });
+
+    for (const inst of respInsts) {
+      for (const sid of (inst.targets||[])) {
+        if (!storeStats[sid]) continue;
+        storeStats[sid].total++;
+        // my_responseは店舗ビューのみなのでresponse_countから概算
+      }
+    }
+    // 詳細集計APIを使って各指示書の回答状況を取得
+    const storeRespMap = {};
+    stores.forEach(s => { storeRespMap[s.id] = { answered:0, total:0 }; });
+    for (const inst of respInsts) {
+      try {
+        const agg = await api('GET', `/api/instructions/${inst.id}/aggregate`);
+        for (const s of agg.stores) {
+          if (!storeRespMap[s.id]) continue;
+          storeRespMap[s.id].total++;
+          if (s.answer) storeRespMap[s.id].answered++;
+        }
+      } catch {}
+    }
+
+    const rankData = stores.map(s => ({
+      ...s,
+      answered: storeRespMap[s.id]?.answered || 0,
+      total:    storeRespMap[s.id]?.total || 0,
+      rate:     storeRespMap[s.id]?.total > 0 ? Math.round((storeRespMap[s.id].answered / storeRespMap[s.id].total)*100) : 0,
+    })).filter(s => s.total > 0);
+
+    const sorted = [...rankData].sort((a,b) => b.rate - a.rate);
+    const medals = ['🥇','🥈','🥉'];
+
+    document.getElementById('agg-rank-high').innerHTML = sorted.map((s,i) => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #f0f0f0">
+        <span style="font-size:18px;width:24px">${medals[i]||`${i+1}`}</span>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px;color:#1a2f4a">${esc(s.name)}</div>
+          <div style="font-size:11px;color:#bbb">${s.area}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:700;font-size:15px;color:${s.rate>=80?'#2e7d32':s.rate>=50?'#f57c00':'#c62828'}">${s.rate}%</div>
+          <div style="font-size:11px;color:#bbb">${s.answered}/${s.total}</div>
+        </div>
+        <div style="width:60px;height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden">
+          <div style="width:${s.rate}%;height:100%;background:${s.rate>=80?'#4caf50':s.rate>=50?'#ff9800':'#f44336'}"></div>
+        </div>
+      </div>`).join('') || '<div style="padding:20px;text-align:center;color:#bbb">データなし</div>';
+
+    const sortedLow = [...rankData].sort((a,b) => (b.total-b.answered) - (a.total-a.answered));
+    document.getElementById('agg-rank-low').innerHTML = sortedLow.map((s,i) => {
+      const unans = s.total - s.answered;
+      return `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #f0f0f0">
+        <span style="font-size:18px;width:24px;color:#d32f2f">${unans > 0 ? '⚠' : '✓'}</span>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px;color:#1a2f4a">${esc(s.name)}</div>
+          <div style="font-size:11px;color:#bbb">${s.area}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:700;font-size:15px;color:${unans>0?'#d32f2f':'#2e7d32'}">${unans}件</div>
+          <div style="font-size:11px;color:#bbb">未回答</div>
+        </div>
+      </div>`;
+    }).join('') || '<div style="padding:20px;text-align:center;color:#bbb">データなし</div>';
+
+    // ── カテゴリ別 ──
+    const catMap = {};
+    filtered.forEach(inst => {
+      if (!catMap[inst.category]) catMap[inst.category] = { count:0, respCount:0, readCount:0, targetCount:0 };
+      catMap[inst.category].count++;
+      catMap[inst.category].respCount   += inst.response_count || 0;
+      catMap[inst.category].readCount   += inst.read_count || 0;
+      catMap[inst.category].targetCount += inst.targets?.length || 0;
+    });
+    const catColors = {'販促':'#2d6a2d','設備':'#2d2d6a','人事・労務':'#6a2d2d','商品':'#6a5a2d','安全・衛生':'#6a2d5a','その他':'#555'};
+    const maxCount = Math.max(...Object.values(catMap).map(v=>v.count), 1);
+    document.getElementById('agg-category-chart').innerHTML = Object.entries(catMap).map(([cat, v]) => {
+      const readRate = v.targetCount > 0 ? Math.round((v.readCount/v.targetCount)*100) : 0;
+      const respRate = v.targetCount > 0 ? Math.round((v.respCount/v.targetCount)*100) : 0;
+      return `
+      <div style="background:white;border:1px solid #e0e0e0;border-radius:8px;padding:16px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge badge-${cat}">${cat}</span>
+            <span style="font-size:13px;color:#555">${v.count}件</span>
+          </div>
+          <div style="display:flex;gap:16px;font-size:12px">
+            <span style="color:#1565c0">既読率: <strong>${readRate}%</strong></span>
+            <span style="color:#2e7d32">回答率: <strong>${respRate}%</strong></span>
+          </div>
+        </div>
+        <div style="margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:2px"><span>配信件数</span><span>${v.count}件</span></div>
+          <div style="height:10px;background:#e0e0e0;border-radius:5px;overflow:hidden">
+            <div style="width:${Math.round((v.count/maxCount)*100)}%;height:100%;background:${catColors[cat]||'#555'};border-radius:5px"></div>
+          </div>
+        </div>
+        <div style="margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:2px"><span>既読率</span><span>${readRate}%</span></div>
+          <div style="height:10px;background:#e0e0e0;border-radius:5px;overflow:hidden">
+            <div style="width:${readRate}%;height:100%;background:#1565c0;border-radius:5px"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:2px"><span>回答率</span><span>${respRate}%</span></div>
+          <div style="height:10px;background:#e0e0e0;border-radius:5px;overflow:hidden">
+            <div style="width:${respRate}%;height:100%;background:#4caf50;border-radius:5px"></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('') || '<div class="empty">データがありません</div>';
+
+    // ── マトリクス ──
+    const thead = `<thead><tr style="background:#1a2f4a;color:white"><th style="padding:10px 14px;text-align:left;white-space:nowrap;position:sticky;left:0;background:#1a2f4a">店舗</th>${respInsts.map(i=>`<th style="padding:8px 10px;min-width:80px"><div style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:normal" title="${esc(i.title)}">${esc(i.title.replace(/【.*?】\s*/g,''))}</div></th>`).join('')}<th style="padding:10px 10px;white-space:nowrap">回答率</th></tr></thead>`;
+
+    const matrixData = {};
+    for (const inst of respInsts) {
+      try {
+        const agg = await api('GET', `/api/instructions/${inst.id}/aggregate`);
+        for (const s of agg.stores) { matrixData[`${s.id}_${inst.id}`] = s.answer; }
+      } catch {}
+    }
+
+    const tbody2 = stores.map((st,idx) => {
+      const answered = respInsts.filter(i => matrixData[`${st.id}_${i.id}`]).length;
+      const rate = respInsts.length > 0 ? Math.round((answered/respInsts.length)*100) : 0;
       return `<tr style="background:${idx%2?'#f8f9fa':'white'}">
-        <td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:600;color:#1a2f4a;white-space:nowrap">${esc(st.name)}</td>
-        ${respInsts.map(() => `<td style="padding:10px 10px;border-bottom:1px solid #eee;text-align:center">—</td>`).join('')}
-        <td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:12px;color:#888">詳細で確認</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;font-weight:600;color:#1a2f4a;white-space:nowrap;position:sticky;left:0;background:${idx%2?'#f8f9fa':'white'}">${esc(st.name)}</td>
+        ${respInsts.map(i => {
+          const ans = matrixData[`${st.id}_${i.id}`];
+          return `<td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:center">
+            ${ans
+              ? `<span title="${esc(ans)}" style="display:inline-flex;width:22px;height:22px;background:#4caf50;border-radius:50%;align-items:center;justify-content:center;color:white;font-size:11px">✓</span>`
+              : `<span style="display:inline-flex;width:22px;height:22px;background:#ffebee;border-radius:50%;align-items:center;justify-content:center;color:#d32f2f;font-size:10px;border:1px solid #ffcdd2">—</span>`}
+          </td>`;
+        }).join('')}
+        <td style="padding:8px 12px;border-bottom:1px solid #eee">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="width:50px;height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden">
+              <div style="width:${rate}%;height:100%;background:${rate>=80?'#4caf50':rate>=50?'#ff9800':'#f44336'}"></div>
+            </div>
+            <span style="font-size:11px;color:#888">${rate}%</span>
+          </div>
+        </td>
       </tr>`;
     }).join('');
-    document.getElementById('agg-matrix').innerHTML = `<table class="data-table">${thead}<tbody>${tbody}</tbody></table>`;
+    document.getElementById('agg-matrix').innerHTML = `<table class="data-table">${thead}<tbody>${tbody2}</tbody></table>`;
+
+    // ── 未回答一覧 ──
+    const unreadItems = [];
+    for (const inst of respInsts) {
+      try {
+        const agg = await api('GET', `/api/instructions/${inst.id}/aggregate`);
+        for (const s of agg.stores) {
+          if (!s.answer) unreadItems.push({ store:s, inst });
+        }
+      } catch {}
+    }
+
+    if (unreadItems.length === 0) {
+      document.getElementById('agg-unread-list').innerHTML = '<div class="empty" style="color:#2e7d32">✅ 全店舗が回答済みです！</div>';
+    } else {
+      // 店舗別にグループ化
+      const byStore = {};
+      unreadItems.forEach(({store, inst}) => {
+        if (!byStore[store.id]) byStore[store.id] = { store, insts:[] };
+        byStore[store.id].insts.push(inst);
+      });
+      document.getElementById('agg-unread-list').innerHTML = Object.values(byStore).map(({store, insts}) => `
+        <div style="background:white;border:1px solid #ffcdd2;border-left:4px solid #f44336;border-radius:8px;padding:14px 16px;margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div>
+              <span style="font-weight:700;color:#1a2f4a">${esc(store.name)}</span>
+              <span style="font-size:11px;color:#bbb;margin-left:8px">${store.area||''}</span>
+            </div>
+            <span style="background:#ffebee;color:#d32f2f;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700">${insts.length}件未回答</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            ${insts.map(i => `<div style="font-size:12px;color:#555;padding:4px 8px;background:#f8f9fa;border-radius:4px">・${esc(i.title)}</div>`).join('')}
+          </div>
+        </div>`).join('');
+    }
+
   } catch(e) {
     document.getElementById('agg-kpi').innerHTML = `<div class="empty" style="color:#d32f2f">${e.message}</div>`;
   }
 }
+
 
 // ─── 管理ページ ───────────────────────────────────────────────
 async function loadAdmin() {
